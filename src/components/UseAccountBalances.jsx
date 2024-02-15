@@ -20,7 +20,7 @@ const UseAccountBalances = ({connectionStatus}) => {
 
   useEffect(() => {
     if (isConnected) {
-      connectionStatus(true)
+      connectionStatus()
       getUserTokens();
     }
   }, [isConnected]); 

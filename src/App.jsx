@@ -22,9 +22,9 @@ createWeb3Modal({
 });
 
 function App() {
-  const [isConnected, setIsConnected]= useState()
-  function handleConnection (value){
-    setIsConnected(value)
+  const [isConnected, setIsConnected]= useState(false)
+  function handleConnection (){
+    setIsConnected(!isConnected)
   }
   return (
     <WagmiProvider config={config}>
