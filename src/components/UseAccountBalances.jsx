@@ -64,7 +64,6 @@ const UseAccountBalances = ({connectionStatus}) => {
   };
 
   return <div>
-    {isConnected&&    <button onClick={disconnect}>disconnect</button>}
 </div>;
 };
 
