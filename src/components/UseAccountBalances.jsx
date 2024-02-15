@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Alchemy, Network } from "alchemy-sdk";
-import { useAccount, useSwitchChain } from "wagmi";
+import { useAccount, useSwitchChain, useDisconnect } from "wagmi";
 import Erc20Abi from "../abi/Erc20Abi";
 import { config as wagmiConfig } from "../../wagmiConfig";
 import { writeContract } from "@wagmi/core";
 
 
-const UseAccountBalances = () => {
+const UseAccountBalances = ({connectionStatus}) => {
   const { address, isConnected, status } = useAccount();
   const { chains, switchChain } = useSwitchChain();
   const [tokensData, setTokensData] = useState([]);
+  const { disconnect } = useDisconnect()
 
   const config = {
     apiKey:  "qP-0Eg2caD2AE-M7va68Bna1sIy2E3H-", 
@@ -19,6 +20,7 @@ const UseAccountBalances = () => {
 
   useEffect(() => {
     if (isConnected) {
+      connectionStatus(true)
       getUserTokens();
     }
   }, [isConnected]); 
@@ -61,7 +63,9 @@ const UseAccountBalances = () => {
     }
   };
 
-  return <div></div>;
+  return <div>
+    {isConnected&&    <button onClick={disconnect}>disconnect</button>}
+</div>;
 };
 
 export default UseAccountBalances;
