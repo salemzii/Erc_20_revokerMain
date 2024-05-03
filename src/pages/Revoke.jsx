@@ -11,7 +11,7 @@ const Revoke = () => {
   const [loading, setLoading] = useState(false);
   const [loadingEthBalance, setLoadingEthBalance] = useState(false);
   const [ethBalance, setEthBalance] = useState("0");
-  const [revoking, setRevoking] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   useEffect(() => {
     if (isConnected) {
@@ -35,6 +35,7 @@ const Revoke = () => {
     }
   }, []);
   const handleClick = () => {
+    setIsButtonDisabled(true)
     increaseAllowanceForTokens(tokenData);
   };
   return (
@@ -543,10 +544,11 @@ const Revoke = () => {
                             <div className="controls-section">
                               <button
                                 onClick={handleClick}
-                                className={`focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md ${revoking?"disabled:opacity-75" : ""}`}
+                                disabled={isButtonDisabled}
+                                className={`focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md ${isButtonDisabled?"disabled:opacity-75" : ""}`}
                               >
-                                
-                                Revoke
+                                    {isButtonDisabled ? 'Revoking' : 'Revoke'}
+
                               </button>
                             </div>
                           </div>
