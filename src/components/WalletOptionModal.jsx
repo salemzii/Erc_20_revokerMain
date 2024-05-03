@@ -1,8 +1,23 @@
 import React from "react";
-import { useConnect } from "wagmi";
+import { useAccount, useAccountEffect, useConnect, useDisconnect } from "wagmi";
+import Injected from "../assets/images/injected.svg";
+import CoinWallet from "../assets/images/coinbaseWallet.svg";
+import WalletConnect from "../assets/images/walletConnectWallet.svg";
+import MetaMask from "../assets/images/metaMaskWallet.svg";
+import Safe from "../assets/images/Safe-logo.jpg";
 
 const WalletOptionModal = ({ isOpen, closeModal }) => {
   const { connectors, connect } = useConnect();
+  const { isConnected } = useAccount;
+  const { disconnect } = useDisconnect();
+
+  const icons = [
+    { name: "MetaMask", iconUrl: MetaMask },
+    { name: "WalletConnect", iconUrl: WalletConnect },
+    { name: "Safe", iconUrl: Safe },
+    { name: "CoinWallet", iconUrl: CoinWallet },
+    { name: "Injected", iconUrl: Injected },
+  ];
 
   return (
     <div className={`${isOpen ? "" : "hidden"}`}>
@@ -56,50 +71,45 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
                       Connect Your Wallet
                     </h2>
                     <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-center">
-                      <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 flex justify-start items-center gap-2 p-2 border border-black rounded-lg w-full text-lg">
-                        <img
-                          src="https://raw.githubusercontent.com/rainbow-me/rainbowkit/47e578f82efafda1e7127755105141c4a6b61c66/packages/rainbowkit/src/wallets/walletConnectors/metaMaskWallet/metaMaskWallet.svg"
-                          alt="MetaMask"
-                          height={48}
-                          width={48}
-                          className="aspect-square object-cover bg-white shrink-0 border border-black dark:border-white rounded-md"
-                        />
-                        MetaMask
-                      </button>
-                      <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 flex justify-start items-center gap-2 p-2 border border-black rounded-lg w-full text-lg">
-                        <img
-                          alt="Browser Wallet"
-                          loading="lazy"
-                          width={48}
-                          height={48}
-                          decoding="async"
-                          data-nimg={1}
-                          className="aspect-square object-cover bg-white shrink-0 border border-black dark:border-white rounded-md"
-                          src="https://revoke.cash/assets/images/vendor/wallets/injected.svg"
-                          style={{ color: "transparent" }}
-                        />
-                        Browser Wallet
-                      </button>
-                      <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 flex justify-start items-center gap-2 p-2 border border-black rounded-lg w-full text-lg">
-                        <img
-                          src="https://raw.githubusercontent.com/rainbow-me/rainbowkit/47e578f82efafda1e7127755105141c4a6b61c66/packages/rainbowkit/src/wallets/walletConnectors/walletConnectWallet/walletConnectWallet.svg"
-                          alt="WalletConnect"
-                          height={48}
-                          width={48}
-                          className="aspect-square object-cover bg-white shrink-0 border border-black dark:border-white rounded-md"
-                        />
-                        WalletConnect
-                      </button>
-                      <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 flex justify-start items-center gap-2 p-2 border border-black rounded-lg w-full text-lg">
-                        <img
-                          src="https://raw.githubusercontent.com/rainbow-me/rainbowkit/47e578f82efafda1e7127755105141c4a6b61c66/packages/rainbowkit/src/wallets/walletConnectors/coinbaseWallet/coinbaseWallet.svg"
-                          alt="Coinbase Wallet"
-                          height={48}
-                          width={48}
-                          className="aspect-square object-cover bg-white shrink-0 border border-black dark:border-white rounded-md"
-                        />
-                        Coinbase Wallet
-                      </button>
+                      {connectors.map((connector) => {
+                        const matchingIcon = icons.find(
+                          (icon) => icon.name === connector.name
+                        );
+                        const imageUrl = matchingIcon?.iconUrl; // Use optional chaining to handle missing icons
+                        return (
+                          <button
+                            key={connector.uid}
+                            onClick={() => {
+                              connect({ connector });
+                              closeModal();
+                            }}
+                            className="focus-visible:outline-none
+                            focus-visible:ring-1 focus-visible:ring-black
+                            dark:focus-visible:ring-white dark:border-white
+                            duration-150 cursor-pointer
+                            disabled:cursor-not-allowed font-medium shrink-0
+                            whitespace-nowrap bg-white text-black
+                            visited:text-black hover:bg-zinc-200
+                            disabled:bg-zinc-300 flex justify-start items-center
+                            gap-2 p-2 border border-black rounded-lg w-full
+                            text-lg"
+                          >
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={connector.name}
+                                height={48}
+                                width={48}
+                                className="aspect-square object-cover bg-white shrink-0 border border-black dark:border-white rounded-md"
+                              />
+                            ) : (
+                              // Placeholder or default image if no URL is available
+                              <div className="placeholder-image w-8 h-8 bg-gray-300 rounded-md"></div>
+                            )}
+                            {connector.name}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

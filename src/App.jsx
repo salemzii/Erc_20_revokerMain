@@ -19,7 +19,7 @@ function App() {
           <Layout>
             <Routes>
               <Route path={PathConstants.HOME} element={<Home />} />
-              <Route path={PathConstants.ADDRESS} element={<Revoke />} />
+              <Route path={PathConstants.REVOKE} element={<Revoke />} />
             </Routes>
           </Layout>
         </>

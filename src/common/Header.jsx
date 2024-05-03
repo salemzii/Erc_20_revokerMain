@@ -1,23 +1,25 @@
-import React ,{useState} from "react";
+import React, { useState } from "react";
 import Logo from "../assets/revoke.svg";
 import Ethereum from "../assets/images/ethereum.svg";
 import UseAccountFunctions from "../utils/helpers";
-import { useAccount, useAccountEffect } from "wagmi";
+import { useAccount, useAccountEffect, useDisconnect } from "wagmi";
+import { useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
-import  WalletOptionModal from "../components/WalletOptionModal";
+import WalletOptionModal from "../components/WalletOptionModal";
+import PathConstants from "../routes/pathConstants";
 const Header = () => {
   const { getUserTokens } = UseAccountFunctions;
   const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+  const navigate = useNavigate();
 
-  useAccountEffect(() => {
-    useAccountEffect({
-      onConnect(data) {
-        console.log("Connected!", data);
-      },
-      onDisconnect() {
-        console.log("Disconnected!");
-      },
-    });
+  useAccountEffect({
+    onConnect() {
+      navigate(PathConstants.REVOKE);
+    },
+    onDisconnect() {
+      console.log("Disconnected!");
+    },
   });
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,7 +28,7 @@ const Header = () => {
 
   return (
     <>
-      <WalletOptionModal isOpen={isOpen} closeModal={closeModal}/>
+      <WalletOptionModal isOpen={isOpen} closeModal={closeModal} />
 
       <header className="flex flex-col relative p-4 lg:px-8 pb-8 gap-4 ">
         <div className="flex justify-between items-center gap-8">
@@ -177,6 +179,7 @@ const Header = () => {
                       aria-expanded="false"
                       data-headlessui-state=""
                       aria-controls="headlessui-menu-items-:r1:"
+                      onClick={() => disconnect()}
                     >
                       <div className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-9 px-4 text-base rounded-lg flex items-center pl-3 pr-2 font-normal">
                         {address.slice(0, 6)}...{address.slice(-4)}
@@ -202,7 +205,6 @@ const Header = () => {
                           </button>
                         </div>
                       </div>
-
                     </div>
                   )}
                   <div
@@ -236,7 +238,6 @@ const Header = () => {
                     </button>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>

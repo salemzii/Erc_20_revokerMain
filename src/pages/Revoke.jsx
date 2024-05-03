@@ -1,34 +1,69 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Container from "../components/Container";
+import UseAccountFunctions from "../utils/helpers";
+import { useAccount, useAccountEffect } from "wagmi";
 
 const Revoke = () => {
+  const { getUserTokens, getAccountBalance, increaseAllowanceForTokens } =
+    UseAccountFunctions();
+  const { isConnected, address } = useAccount();
+  const [tokenData, setTokenData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingEthBalance, setLoadingEthBalance] = useState(false);
+  const [ethBalance, setEthBalance] = useState("0");
+  const [revoking, setRevoking] = useState(false);
+
+  useEffect(() => {
+    if (isConnected) {
+      setLoading(true);
+      setLoadingEthBalance(true);
+      getAccountBalance(address)
+        .then((response) => {
+          console.log("response: ", response.formatted);
+          const formatted = response.formatted;
+          setEthBalance(formatted);
+        })
+        .finally(() => {
+          setLoadingEthBalance(false);
+        });
+      getUserTokens(address)
+        .then((response) => {
+          setTokenData(response);
+          // console.log("response: ", response);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, []);
+  const handleClick = () => {
+    increaseAllowanceForTokens(tokenData);
+  };
   return (
     <Container>
-        <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
-  <form className="h-9 flex gap-2 items-center border border-black dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      data-slot="icon"
-      className="w-6 h-6"
-    >
-      <path
-        fillRule="evenodd"
-        d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
-        clipRule="evenodd"
-      />
-    </svg>
-    <input
-      className="grow focus-visible:outline-none bg-transparent"
-      placeholder="Search Accounts by Address or Domain"
-      aria-label="Search Accounts by Address or Domain"
-      id="global-search"
-      defaultValue=""
-    />
-  </form>
-</div>
+      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
+        <form className="h-9 flex gap-2 items-center border border-black dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            data-slot="icon"
+            className="w-6 h-6"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <input
+            className="grow focus-visible:outline-none bg-transparent"
+            placeholder="Search Accounts by Address or Domain"
+            aria-label="Search Accounts by Address or Domain"
+            id="global-search"
+            defaultValue=""
+          />
+        </form>
+      </div>
 
       <div className="">
         <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
@@ -36,12 +71,16 @@ const Revoke = () => {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
               <div className="flex flex-col gap-2 items-center sm:items-start">
                 <div className="flex gap-1 items-center text-2xl font-bold leading-none">
-                  0x944853...9D1e9f
+                  {address && (
+                    <>
+                      {address.slice(0, 6)}... {address.slice(-6)}
+                    </>
+                  )}
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-2">
                   <div className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
                     <div className="flex gap-0.5 items-center leading-tight shrink-0">
-                      <span>0.377</span>
+                      <span>{loadingEthBalance ? "Loading" : ethBalance}</span>
                       <span className="font-bold">ETH</span>
                     </div>
                     <div className="leading-none">•</div>
@@ -70,9 +109,15 @@ const Revoke = () => {
                       </button>
                     </div>
                   </div>
-                  <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md bg-green-400 text-zinc-900">
-                    Connected
-                  </div>
+                  {isConnected ? (
+                    <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md bg-green-400 text-zinc-900">
+                      Connected
+                    </div>
+                  ) : (
+                    <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md bg-zinc-300 text-zinc-900 dark:bg-zinc-600 dark:text-zinc-100">
+                      Not Connected
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-6">
@@ -295,7 +340,9 @@ const Revoke = () => {
                       <div className="text-zinc-600 dark:text-zinc-400 text-center">
                         Total Approvals
                       </div>
-                      <div className="font-bold">3</div>
+                      <div className="font-bold">
+                        {loading ? "loading" : tokenData.length}
+                      </div>
                     </div>
                     <div className="flex flex-col items-center gap-0.5">
                       <div className="text-zinc-600 dark:text-zinc-400 text-center">
@@ -360,398 +407,153 @@ const Revoke = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-t border-zinc-300 dark:border-zinc-500">
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-1 py-1">
-                        <div className="flex flex-col items-start gap-0.5">
-                          <div className="flex items-center gap-2 text-base w-48 lg:w-56">
-                            <div className="relative shrink-0">
-                              <div
-                                className="aspect-square bg-zinc-300 dark:bg-zinc-600 rounded-full border border-black dark:border-white"
-                                style={{ width: 24, height: 24 }}
-                              />
+                  {loading ? (
+                    <p>Loading data...</p>
+                  ) : (
+                    tokenData.map((token, i) => (
+                      <tr
+                        key={i}
+                        className="border-t border-zinc-300 dark:border-zinc-500"
+                      >
+                        <td className="overflow-hidden px-2">
+                          <div className="flex items-center gap-1 py-1">
+                            <div className="flex flex-col items-start gap-0.5">
+                              <div className="flex items-center gap-2 text-base w-48 lg:w-56">
+                                <div className="relative shrink-0">
+                                  <div
+                                    className="aspect-square bg-zinc-300 dark:bg-zinc-600 rounded-full border border-black dark:border-white"
+                                    style={{ width: 24, height: 24 }}
+                                  />
+                                </div>
+                                <a
+                                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline truncate"
+                                  href="https://sepolia.etherscan.io/address/0x5f520Bf5B7130766bf586E7d7D57D96e7d4430Af"
+                                  target="_blank"
+                                  referrerPolicy="origin"
+                                >
+                                  {token.name}
+                                </a>
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400 flex gap-1 w-48 lg:w-56">
+                                <div className="truncate shrink">
+                                  30,889,000 BUSD
+                                </div>
+                              </div>
                             </div>
+                          </div>
+                        </td>
+                        <td className="overflow-hidden px-2">
+                          <div className="flex justify-start">
+                            <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md w-12 bg-yellow-400 text-zinc-900">
+                              Token
+                            </div>
+                          </div>
+                        </td>
+                        <td className="overflow-hidden px-2">
+                          <div className="flex items-center gap-2 w-40">
+                            <div className="flex flex-col justify-start items-start truncate">
+                              <div className="w-full truncate">
+                                {token.balance} {token.symbol}
+                              </div>
+                            </div>
+                            <div>
+                              <button
+                                aria-label="Edit Token Approval"
+                                className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed leading-none font-medium shrink-0 whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth="1.5"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                  data-slot="icon"
+                                  className="w-3 h-3"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="overflow-hidden px-2">
+                          <div className="flex items-center justify-end gap-1 py-1 text-right font-monosans text-zinc-500 dark:text-zinc-400">
+                            Unknown
+                          </div>
+                        </td>
+                        <td className="overflow-hidden px-2">
+                          <div className="flex items-center gap-2 w-48">
+                            <div className="flex flex-col justify-start items-start">
+                              <a
+                                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline"
+                                href="https://sepolia.etherscan.io/address/0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f"
+                                target="_blank"
+                                referrerPolicy="origin"
+                                aria-expanded="false"
+                              >
+                                <div className="max-w-[10rem] truncate">
+                                  0x944853...9D1e9f
+                                </div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400" />
+                              </a>
+                            </div>
+                            <button
+                              aria-label="Copy To Clipboard"
+                              className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                                data-slot="icon"
+                                className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                        <td className="overflow-hidden px-2">
+                          <div className="flex justify-start items-center font-monosans gap-2 w-41">
                             <a
-                              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline truncate"
-                              href="https://sepolia.etherscan.io/address/0x5f520Bf5B7130766bf586E7d7D57D96e7d4430Af"
+                              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline tx-link"
+                              href="https://sepolia.etherscan.io/tx/0x82fb7173fd61984fe4f5dedd441baa4c80c4af67b91d720be37225e16b08fe8f"
                               target="_blank"
                               referrerPolicy="origin"
+                              aria-expanded="false"
                             >
-                              BUSD
+                              05/02/2024 11:17:24 PM
                             </a>
                           </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex gap-1 w-48 lg:w-56">
-                            <div className="truncate shrink">
-                              30,889,000 BUSD
+                        </td>
+                        <td className="overflow-hidden px-2">
+                          <div className="flex justify-end w-28 mr-0 mx-auto">
+                            <div className="controls-section">
+                              <button
+                                onClick={handleClick}
+                                className={`focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md ${revoking?"disabled:opacity-75" : ""}`}
+                              >
+                                
+                                Revoke
+                              </button>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-start">
-                        <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md w-12 bg-yellow-400 text-zinc-900">
-                          Token
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-2 w-40">
-                        <div className="flex flex-col justify-start items-start truncate">
-                          <div className="w-full truncate">Unlimited</div>
-                        </div>
-                        <div>
-                          <button
-                            aria-label="Edit Token Approval"
-                            className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed leading-none font-medium shrink-0 whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                              data-slot="icon"
-                              className="w-3 h-3"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center justify-end gap-1 py-1 text-right font-monosans text-zinc-500 dark:text-zinc-400">
-                        Unknown
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-2 w-48">
-                        <div className="flex flex-col justify-start items-start">
-                          <a
-                            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline"
-                            href="https://sepolia.etherscan.io/address/0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f"
-                            target="_blank"
-                            referrerPolicy="origin"
-                            aria-expanded="false"
-                          >
-                            <div className="max-w-[10rem] truncate">
-                              0x944853...9D1e9f
-                            </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400" />
-                          </a>
-                        </div>
-                        <button
-                          aria-label="Copy To Clipboard"
-                          className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                            data-slot="icon"
-                            className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-start items-center font-monosans gap-2 w-41">
-                        <a
-                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline tx-link"
-                          href="https://sepolia.etherscan.io/tx/0x82fb7173fd61984fe4f5dedd441baa4c80c4af67b91d720be37225e16b08fe8f"
-                          target="_blank"
-                          referrerPolicy="origin"
-                          aria-expanded="false"
-                        >
-                          05/02/2024 11:17:24 PM
-                        </a>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-end w-28 mr-0 mx-auto">
-                        <div className="controls-section">
-                          <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md">
-                            Revoke
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-t border-zinc-300 dark:border-zinc-500">
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-1 py-1">
-                        <div className="flex flex-col items-start gap-0.5">
-                          <div className="flex items-center gap-2 text-base w-48 lg:w-56">
-                            <div className="relative shrink-0">
-                              <div
-                                className="aspect-square bg-zinc-300 dark:bg-zinc-600 rounded-full border border-black dark:border-white"
-                                style={{ width: 24, height: 24 }}
-                              />
-                            </div>
-                            <a
-                              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline truncate"
-                              href="https://sepolia.etherscan.io/address/0x0197FF2dE4b0E36a686664B91CF8A9167d4521Dc"
-                              target="_blank"
-                              referrerPolicy="origin"
-                            >
-                              SHIB
-                            </a>
-                          </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex gap-1 w-48 lg:w-56">
-                            <div className="truncate shrink">4,000 SHIB</div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-start">
-                        <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md w-12 bg-yellow-400 text-zinc-900">
-                          Token
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-2 w-40">
-                        <div className="flex flex-col justify-start items-start truncate">
-                          <div className="w-full truncate">12,000 SHIB</div>
-                        </div>
-                        <div>
-                          <button
-                            aria-label="Edit Token Approval"
-                            className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed leading-none font-medium shrink-0 whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                              data-slot="icon"
-                              className="w-3 h-3"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center justify-end gap-1 py-1 text-right font-monosans text-zinc-500 dark:text-zinc-400">
-                        Unknown
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-2 w-48">
-                        <div className="flex flex-col justify-start items-start">
-                          <a
-                            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline"
-                            href="https://sepolia.etherscan.io/address/0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f"
-                            target="_blank"
-                            referrerPolicy="origin"
-                            aria-expanded="false"
-                          >
-                            <div className="max-w-[10rem] truncate">
-                              0x944853...9D1e9f
-                            </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400" />
-                          </a>
-                        </div>
-                        <button
-                          aria-label="Copy To Clipboard"
-                          className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                            data-slot="icon"
-                            className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-start items-center font-monosans gap-2 w-41">
-                        <a
-                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline tx-link"
-                          href="https://sepolia.etherscan.io/tx/0xe76cdb754f23e00ad36dc78bad6e6186ce740fdf1ef57497dc3eb5f75ac70aa1"
-                          target="_blank"
-                          referrerPolicy="origin"
-                          aria-expanded="false"
-                        >
-                          05/02/2024 11:16:36 PM
-                        </a>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-end w-28 mr-0 mx-auto">
-                        <div className="controls-section">
-                          <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md">
-                            Revoke
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-t border-zinc-300 dark:border-zinc-500">
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-1 py-1">
-                        <div className="flex flex-col items-start gap-0.5">
-                          <div className="flex items-center gap-2 text-base w-48 lg:w-56">
-                            <div className="relative shrink-0">
-                              <div
-                                className="aspect-square bg-zinc-300 dark:bg-zinc-600 rounded-full border border-black dark:border-white"
-                                style={{ width: 24, height: 24 }}
-                              />
-                            </div>
-                            <a
-                              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline truncate"
-                              href="https://sepolia.etherscan.io/address/0xbeF6E483eC9597Ab442959d32589e03911223b0D"
-                              target="_blank"
-                              referrerPolicy="origin"
-                            >
-                              PTC
-                            </a>
-                          </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400 flex gap-1 w-48 lg:w-56">
-                            <div className="truncate shrink">10 PTC</div>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-start">
-                        <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md w-12 bg-yellow-400 text-zinc-900">
-                          Token
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-2 w-40">
-                        <div className="flex flex-col justify-start items-start truncate">
-                          <div className="w-full truncate">10 PTC</div>
-                        </div>
-                        <div>
-                          <button
-                            aria-label="Edit Token Approval"
-                            className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed leading-none font-medium shrink-0 whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                              data-slot="icon"
-                              className="w-3 h-3"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center justify-end gap-1 py-1 text-right font-monosans text-zinc-500 dark:text-zinc-400">
-                        Unknown
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex items-center gap-2 w-48">
-                        <div className="flex flex-col justify-start items-start">
-                          <a
-                            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline"
-                            href="https://sepolia.etherscan.io/address/0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f"
-                            target="_blank"
-                            referrerPolicy="origin"
-                            aria-expanded="false"
-                          >
-                            <div className="max-w-[10rem] truncate">
-                              0x944853...9D1e9f
-                            </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400" />
-                          </a>
-                        </div>
-                        <button
-                          aria-label="Copy To Clipboard"
-                          className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            aria-hidden="true"
-                            data-slot="icon"
-                            className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-start items-center font-monosans gap-2 w-41">
-                        <a
-                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:underline tx-link"
-                          href="https://sepolia.etherscan.io/tx/0x576d07d984f14f3595762d4147ad306ca0f815b6ff05ec8b773bda57bdf91165"
-                          target="_blank"
-                          referrerPolicy="origin"
-                          aria-expanded="false"
-                        >
-                          05/02/2024 11:12:12 PM
-                        </a>
-                      </div>
-                    </td>
-                    <td className="overflow-hidden px-2">
-                      <div className="flex justify-end w-28 mr-0 mx-auto">
-                        <div className="controls-section">
-                          <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md">
-                            Revoke
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
               <div className="flex flex-col justify-center items-center p-3 gap-2 w-full h-10 empty:hidden" />

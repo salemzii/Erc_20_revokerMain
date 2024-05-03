@@ -7,7 +7,7 @@ import {
   useSendTransaction,
   useBalance,
 } from "wagmi";
-import Erc20Abi from "../abi/Erc20Abi";
+import Erc20Abi from "../utils/Erc20Abi";
 import { config as wagmiConfig } from "../../wagmiConfig";
 import { writeContract, getBalance, sendTransaction } from "@wagmi/core";
 import { parseEther } from "viem";
