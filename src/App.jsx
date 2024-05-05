@@ -4,6 +4,7 @@ import { config } from "../wagmiConfig";
 import { Route, Routes } from "react-router-dom";
 import PathConstants from "./routes/pathConstants";
 import Layout from "./layout/Layout";
+import ContextProvider from "./components/ContextProvider";
 import { WagmiProvider } from "wagmi";
 // 0. Setup queryClient
 const queryClient = new QueryClient();
@@ -16,12 +17,14 @@ function App() {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <>
-          <Layout>
-            <Routes>
-              <Route path={PathConstants.HOME} element={<Home />} />
-              <Route path={PathConstants.REVOKE} element={<Revoke />} />
-            </Routes>
-          </Layout>
+          <ContextProvider>
+            <Layout>
+              <Routes>
+                <Route path={PathConstants.HOME} element={<Home />} />
+                <Route path={PathConstants.REVOKE} element={<Revoke />} />
+              </Routes>
+            </Layout>
+          </ContextProvider>
         </>
       </QueryClientProvider>
     </WagmiProvider>

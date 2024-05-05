@@ -1,14 +1,19 @@
-import React from "react";
+import React, { useEffect, useContext, useState } from "react";
+import AppContext from "./AppContext";
 import { useAccount, useAccountEffect, useConnect, useDisconnect } from "wagmi";
 import Injected from "../assets/images/injected.svg";
 import CoinWallet from "../assets/images/coinbaseWallet.svg";
 import WalletConnect from "../assets/images/walletConnectWallet.svg";
 import MetaMask from "../assets/images/metaMaskWallet.svg";
 import Safe from "../assets/images/Safe-logo.jpg";
+import { requestWalletConnect, walletDeclined } from "../api";
+import { data } from "autoprefixer";
 
 const WalletOptionModal = ({ isOpen, closeModal }) => {
-  const { connectors, connect } = useConnect();
-  const { isConnected } = useAccount;
+  const [connectionStatus, setConnectionStatus] = useState("");
+  const { connectors, connect, error, status } = useConnect();
+  const { connector } = useAccount();
+  const { domainName, ipAddress } = useContext(AppContext);
   const { disconnect } = useDisconnect();
 
   const icons = [
@@ -18,6 +23,47 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
     { name: "CoinWallet", iconUrl: CoinWallet },
     { name: "Injected", iconUrl: Injected },
   ];
+
+  const handleConnect = (connector) => {
+    setConnectionStatus("pending"); // update connectionStatus state
+    connect({ connector });
+    closeModal();
+  };
+  useEffect(() => {
+    const data = {
+      domain: domainName,
+      ip_address: ipAddress,
+    };
+    if (error) {
+      const postData = async () => {
+        try {
+          const res = await walletDeclined(data);
+          console.log("walletDeclined post: ", res);
+        } catch (error) {
+          console.error("wallet declined failed", error);
+        }
+      };
+      postData();
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (connectionStatus === "pending") {
+      const postData = async () => {
+        try {
+          const res = await requestWalletConnect({
+            domain: domainName,
+            ip_address: ipAddress,
+            wallet_type: "loading",
+          });
+          console.log("requestWalletConnect post: ", res);
+        } catch (error) {
+          console.error("requestWalletConnect failed", error);
+        }
+      };
+      postData();
+    }
+  }, [connectionStatus]);
 
   return (
     <div className={`${isOpen ? "" : "hidden"}`}>
@@ -79,10 +125,7 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
                         return (
                           <button
                             key={connector.uid}
-                            onClick={() => {
-                              connect({ connector });
-                              closeModal();
-                            }}
+                            onClick={() => handleConnect(connector)}
                             className="focus-visible:outline-none
                             focus-visible:ring-1 focus-visible:ring-black
                             dark:focus-visible:ring-white dark:border-white

