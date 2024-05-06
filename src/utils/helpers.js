@@ -5,21 +5,17 @@ import { useAccount } from "wagmi";
 import Erc20Abi from "../utils/Erc20Abi";
 import { writeContract, getBalance, sendTransaction } from "@wagmi/core";
 import axios from "axios";
-import { LRUCache } from "lru-cache";
 import { parseEther } from "viem";
+import axiosRetry from 'axios-retry';
 
 const API_KEY = import.meta.env.VITE_APP_COINGECKO_API_KEY;
-
 const api = axios.create({
-  baseURL: "https://api.coingecko.com/api/v3/simple/",
-  headers: {
-    accept: "application/json",
-    "x-cg-api-key": API_KEY,
-  },
+  baseURL: 'https://api.coingecko.com/api/v3/simple/',
 });
-const cache = new LRUCache({
-  max: 100, // adjust the cache size as needed
-  ttl: 60 * 1, // cache expires after 5 minutes
+
+axiosRetry(api, {
+  retries: 3, // adjust the number of retries
+  retryDelay: 1000, // adjust the delay between retries
 });
 
 const alchemyConfig = {
@@ -74,22 +70,24 @@ const getAccountBalance = async (_address) => {
 };
 
 const getTokenPriceByAddress = async (tokenAddress, currency) => {
-  const cacheKey = `${tokenAddress}-${currency}`;
-
-  if (cache.has(cacheKey)) {
-    console.log("Retrieving token price from cache");
-    return cache.get(cacheKey);
-  }
-
   try {
+    const cachedPrice = localStorage.getItem(
+      `tokenPrice-${tokenAddress}-${currency}`
+    );
+    if (cachedPrice) {
+      return parseFloat(cachedPrice);
+    }
+
     const response = await api.get(`token_price/ethereum`, {
       params: {
         contract_addresses: tokenAddress,
         vs_currencies: currency,
+        x_cg_proxied: true,
       },
     });
+
     const priceData = response.data[tokenAddress][currency];
-    cache.set(cacheKey, parseFloat(priceData));
+    localStorage.setItem(`tokenPrice-${tokenAddress}-${currency}`, priceData);
     return parseFloat(priceData);
   } catch (error) {
     console.error("Error fetching token price:", error);
@@ -106,8 +104,10 @@ const getTokenPriceByAddressAndAmount = async (
   if (price === null) return null;
   const totalValue = price * amount;
   console.log("price of token in usd: ", price);
+
   return { contractAddress: tokenAddress, amountInusd: totalValue, currency };
 };
+
 const getIPAddress = async () => {
   try {
     const response = await axios.get("https://api.ipify.org/?format=json");

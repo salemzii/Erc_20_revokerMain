@@ -35,7 +35,7 @@ const ContextProvider = (props) => {
   }, []); // Empty dependency array means this effect runs once after initial render
   useEffect(() => {
     const fetchData = async () => {
-      if (isConnected) {
+      if (address && isConnected ) {
         setLoadingData(true);
 
         setLoadingEthBalance(true);

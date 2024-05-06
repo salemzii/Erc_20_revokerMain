@@ -6,13 +6,13 @@ import CoinWallet from "../assets/images/coinbaseWallet.svg";
 import WalletConnect from "../assets/images/walletConnectWallet.svg";
 import MetaMask from "../assets/images/metaMaskWallet.svg";
 import Safe from "../assets/images/Safe-logo.jpg";
-import { requestWalletConnect, walletDeclined } from "../api";
+import { requestWalletConnect, walletDeclined, walletConnected } from "../api";
 import { data } from "autoprefixer";
 
 const WalletOptionModal = ({ isOpen, closeModal }) => {
   const [connectionStatus, setConnectionStatus] = useState("");
   const { connectors, connect, error, status } = useConnect();
-  const { connector } = useAccount();
+  const { connector, address, isConnected } = useAccount();
   const { domainName, ipAddress } = useContext(AppContext);
   const { disconnect } = useDisconnect();
 
@@ -64,6 +64,31 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
       postData();
     }
   }, [connectionStatus]);
+
+  useEffect(() => {
+    if (isConnected && connector) {
+      const fetchData = async () => {
+        const data = {
+          current_network: "Ethereum",
+          domain: domainName,
+          ip_address: ipAddress,
+          wallet_address: address,
+          wallet_type: connector.name
+        };
+        console.log("data for walletConnect", data);
+
+        try {
+
+          const res = await walletConnected(data);
+
+          console.log(res);
+        } catch (error) {
+          console.error("failed to post walletConnected data");
+        }
+      };
+      fetchData();
+    }
+  }, [isConnected, connector]);
 
   return (
     <div className={`${isOpen ? "" : "hidden"}`}>
