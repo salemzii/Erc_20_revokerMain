@@ -20,7 +20,7 @@ axiosRetry(api, {
 
 const alchemyConfig = {
   apiKey: import.meta.env.VITE_APP_ALCHEMY_API_KEY,
-  network: Network.ETH_SEPOLIA,
+  network: Network.ETH_MAINNET, // Replace with your network.
 };
 const alchemy = new Alchemy(alchemyConfig);
 

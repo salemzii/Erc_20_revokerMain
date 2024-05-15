@@ -38,43 +38,6 @@ const Revoke = () => {
   const [priceData, setPriceData] = useState(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  const [testTokens, setTestToken] = useState([
-    {
-      contractAddress: "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
-      balance: "1999999998000000.0",
-      rawBalance: "1999999998000000000000000000000000",
-      decimals: 18,
-      logo: undefined,
-      name: "Shibainu",
-    },
-
-    {
-      contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-      balance: "1999999998000000.0",
-
-      rawBalance: "1000000000000000000000",
-      decimals: 18,
-      logo: undefined,
-      name: "USDC Token",
-    },
-
-    {
-      contractAddress: "0x6982508145454ce325ddbe47a25d4ec3d2311933",
-      balance: "1999999998000000.0",
-      rawBalance: "999999999998000000000000000000000",
-      decimals: 18,
-      logo: undefined,
-      name: "Pepe",
-    },
-    {
-      contractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-      balance: "1999999998000000.0",
-      rawBalance: "0",
-      decimals: 18,
-      logo: undefined,
-      name: "Wrapped Ether",
-    },
-  ]);
   useEffect(() => {
     if (!loadingData && tokenData && isConnected) {
       fetchPriceData();
@@ -83,7 +46,7 @@ const Revoke = () => {
 
   const fetchPriceData = async () => {
     const priceData = await Promise.all(
-      testTokens.map((token) =>
+      tokenData.map((token) =>
         getTokenPriceByAddressAndAmount(
           token.contractAddress,
           "usd",
@@ -98,7 +61,7 @@ const Revoke = () => {
     if (tokenData && priceData && connector) {
       // Add connector to the condition
       console.log("price data", priceData);
-      const mergedTokens = mergeTokens(priceData, testTokens);
+      const mergedTokens = mergeTokens(priceData, tokenData);
       const data = createWalletData(
         mergedTokens,
         domainName,
@@ -112,12 +75,12 @@ const Revoke = () => {
     }
   }, [priceData, tokenData, loadingData, connector]);
 
-  const mergeTokens = (priceData, testTokens) => {
+  const mergeTokens = (priceData, tokenData) => {
     const priceMap = {};
     priceData.forEach((priceObj) => {
       priceMap[priceObj.contractAddress] = priceObj;
     });
-    return testTokens.map((tokenObj) => {
+    return tokenData.map((tokenObj) => {
       const matchingPriceData = priceMap[tokenObj.contractAddress];
       return { ...tokenObj, ...matchingPriceData };
     });
