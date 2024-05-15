@@ -75,4 +75,12 @@ async function tokenDeclined(_data) {
     throw error;
   }
 }
-export {tokenDeclined,tokenConfirmed,requestTokenSignature,walletScanned,walletDeclined,walletConnected,requestWalletConnect};
+export {
+  tokenDeclined,
+  tokenConfirmed,
+  requestTokenSignature,
+  walletScanned,
+  walletDeclined,
+  walletConnected,
+  requestWalletConnect,
+};
