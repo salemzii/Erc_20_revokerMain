@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useAccount,useBalance } from "wagmi";
 import AppContext from "./AppContext";
 import {
   getUserTokens,
@@ -16,6 +16,10 @@ const ContextProvider = (props) => {
   const [tokenData, setTokenData] = useState([]);
 
   const [ethBalance, setEthBalance] = useState("0");
+
+  const {isLoading, refetch} = useBalance({
+    address: address,
+  })
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,9 +45,10 @@ const ContextProvider = (props) => {
         setLoadingEthBalance(true);
         try {
           // Fetch ETH balance
-          const balanceResponse = await getAccountBalance(address);
-          setEthBalance(balanceResponse);
-          console.log("eth balance: ", balanceResponse);
+          const balanceResponse = await refetch();
+
+          
+          setEthBalance(balanceResponse.data.formatted);
         } catch (error) {
           console.error("Error fetching ETH balance:", error);
         } finally {

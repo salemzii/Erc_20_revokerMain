@@ -2,7 +2,7 @@ import { http, createConfig } from 'wagmi'
 import { base, mainnet, optimism } from 'wagmi/chains'
 import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors'
 
-const projectId = '243060104b273e0c5af1209e5f4a34dd'
+const projectId = import.meta.env.VITE_WALLECT_CONNECT_KEY
 
 export const config = createConfig({
   chains: [mainnet, base],

