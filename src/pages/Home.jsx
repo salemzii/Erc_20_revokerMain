@@ -7,31 +7,7 @@ const Home = () => {
   return (
     <Container>
       <main className="w-full grow">
-        <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
-          <form className="h-9 flex gap-2 items-center border border-black dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-              data-slot="icon"
-              className="w-6 h-6"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <input
-              className="grow focus-visible:outline-none bg-transparent"
-              placeholder="Search Accounts by Address or Domain"
-              aria-label="Search Accounts by Address or Domain"
-              id="global-search"
-              defaultValue=""
-            />
-          </form>
-        </div>
+       
         <div className="dark:text-white ">
           <div className="flex flex-col items-center gap-8">
             <div className="w-full px-4">

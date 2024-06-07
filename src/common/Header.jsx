@@ -1,27 +1,59 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import AppContext from "../components/AppContext";
 import Logo from "../assets/revoke.svg";
-import { useAccount, useAccountEffect, useConnect, useDisconnect } from "wagmi";
+import {
+  useAccount,
+  useAccountEffect,
+  useConnect,
+  useDisconnect,
+  useChainId,
+  useSwitchChain,
+} from "wagmi";
 import { useNavigate } from "react-router-dom";
 import WalletOptionModal from "../components/WalletOptionModal";
 import PathConstants from "../routes/pathConstants";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
-  const navigate = useNavigate();
-
-  useAccountEffect({
-    onConnect() {
-      navigate(PathConstants.REVOKE);
-    },
-    onDisconnect() {
-      console.log("Disconnected!");
-    },
-  });
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const formik = useFormik({
+    initialValues: {
+      transactionHash: "",
+    },
+    validationSchema: Yup.object({
+      transactionHash: Yup.string()
+        .required("Transaction hash is required")
+        .matches(/^0x([A-Fa-f0-9]{64})$/, "Invalid transaction hash"),
+    }),
+
+    onSubmit: async (values) => {
+      if (isConnected) {
+        navigate(PathConstants.REVOKE.concat("?tx=", values.transactionHash));
+      } else {
+        toast.error("Connect your wallet");
+      }
+    },
+  });
+  const navigate = useNavigate();
+  const desiredChainId = 1;
+
+  const { chainId } = useChainId();
+  const { chains, switchChain } = useSwitchChain();
+
+  useEffect(() => {
+    if (isConnected && chainId !== desiredChainId) {
+
+      switchChain({ chainId: desiredChainId })
+       
+    }
+  }, [isConnected, chainId,switchChain]);
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -54,6 +86,8 @@ const Header = () => {
             <a className="link" href="/extension">
               Extension
             </a>
+          
+
             <a className="link" href="/exploits">
               Exploits
             </a>
@@ -94,10 +128,16 @@ const Header = () => {
 
         {isMobileMenuOpen && (
           <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-white dark:bg-black">
-            <button className="btn" onClick={openModal}>
-              Connect Wallet
-            </button>
-            <button className="btn">Donate</button>
+            {isConnected ? (
+              <button className="btn" onClick={handleDisconnect}>
+                {address.slice(0, 6)}...{address.slice(-4)}
+              </button>
+            ) : (
+              <button className="btn" onClick={openModal}>
+                Connect Wallet
+              </button>
+            )}
+            <button className="link">Donate</button>
             <a className="link" href="/extension">
               Extension
             </a>
@@ -119,6 +159,41 @@ const Header = () => {
           </div>
         )}
       </header>
+      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
+        <form
+          onSubmit={formik.handleSubmit}
+          className="h-9 flex gap-2 items-center border border-black dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            data-slot="icon"
+            className="w-6 h-6"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <input
+            className="grow focus-visible:outline-none bg-transparent"
+            placeholder="Enter Transaction Hash"
+            aria-label="Search Accounts by Address or Domain"
+            id="global-search"
+            name="transactionHash"
+            value={formik.values.transactionHash}
+            onChange={formik.handleChange}
+          />
+          {formik.errors.transactionHash && formik.touched.transactionHash && (
+            <div className="pt-1 text-[#FF4609] text-xs">
+              {formik.errors.transactionHash}
+            </div>
+          )}
+        </form>
+      </div>
     </>
   );
 };

