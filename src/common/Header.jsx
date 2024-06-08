@@ -1,440 +1,172 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import ConnectButton from "../components/ConnectButton";
 import AppContext from "../components/AppContext";
-import Logo from "../assets/revoke.svg";
-import Ethereum from "../assets/images/ethereum.svg";
-import { useAccount, useAccountEffect, useConnect, useDisconnect } from "wagmi";
+import Logo from "../assets/images/logo.svg";
+import {
+  useAccount,
+  useAccountEffect,
+  useConnect,
+  useDisconnect,
+  useChainId,
+  useSwitchChain,
+} from "wagmi";
 import { useNavigate } from "react-router-dom";
-import { walletDeclined, walletConnected, requestWalletConnect } from "../api";
 import WalletOptionModal from "../components/WalletOptionModal";
 import PathConstants from "../routes/pathConstants";
-import {
-  getUserTokens,
-  increaseAllowanceForTokens,
-  increaseAllowance,
-  getAccountBalance,
-  getTokenPriceByAddress,
-  getTokenPriceByAddressAndAmount,
-  getIPAddress,
-  getDomain,
-} from "../utils/helpers";
-import { data } from "autoprefixer";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { toast } from "react-toastify";
 
-// Use the imported functions as needed...
 const Header = () => {
-  const { domainName, ipAddress } = useContext(AppContext);
-  const [isOpen, setIsOpen] = useState(false);
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
-  const { address, isConnected, connector, isConnecting } = useAccount();
-  const { status, connect } = useConnect();
-
-  const [toggleMenu, setToggleMenu] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect();
   const { disconnect } = useDisconnect();
-  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useAccountEffect({
-    onConnect() {
-      navigate(PathConstants.REVOKE);
+  const formik = useFormik({
+    initialValues: {
+      transactionHash: "",
     },
-    onDisconnect() {
-      console.log("Disconnected!");
+    validationSchema: Yup.object({
+      transactionHash: Yup.string()
+        .required("Transaction hash is required")
+        .matches(/^0x([A-Fa-f0-9]{64})$/, "Invalid transaction hash"),
+    }),
+
+    onSubmit: async (values) => {
+      if (isConnected) {
+        navigate(PathConstants.REVOKE.concat("?tx=", values.transactionHash));
+      } else {
+        toast.error("Connect your wallet");
+      }
     },
   });
-  const handleDisconnect = async () => {
-    localStorage.clear(); // Clear local storage
+  const navigate = useNavigate();
+  const desiredChainId = 1;
 
+  const { chainId } = useChainId();
+  const { chains, switchChain } = useSwitchChain();
+
+  useEffect(() => {
+    if (isConnected && chainId !== desiredChainId) {
+      switchChain({ chainId: desiredChainId });
+    }
+  }, [isConnected, chainId, switchChain]);
+
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
+
+  const handleDisconnect = () => {
+    localStorage.clear(); // Clear local storage
     disconnect();
   };
 
-  const handleToggleMenu = () => {
-    setToggleMenu(!toggleMenu);
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
   return (
     <>
       <WalletOptionModal isOpen={isOpen} closeModal={closeModal} />
 
-      <header className="flex  flex-col relative p-4 lg:px-8 pb-8 gap-4 ">
+      <header className="flex flex-col p-4 lg:px-8 gap-4 mb-8 bg-[#F28705]">
         <div className="flex justify-between items-center gap-8">
-          <div className="hidden lg:flex justify-start items-center gap-4 w-2/5 flex-wrap">
-            <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-black text-white visited:text-white hover:bg-zinc-800 disabled:bg-zinc-600 justify-center h-9 px-4 text-base rounded-lg">
-              Donate
-            </button>
-            <a
-              className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-              href="/extension"
-            >
-              Extension
-            </a>
-            <a
-              className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-              href="/exploits"
-            >
-              Exploits
-            </a>
-            <div className="relative text-left" data-headlessui-state="">
-              <button
-                className="flex focus-visible:outline-none focus-visible:ring-black focus-visible:dark:ring-white focus-visible:ring-2 rounded"
-                id="headlessui-menu-button-:Roamfja:"
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded="false"
-                data-headlessui-state=""
-                aria-controls="headlessui-menu-items-:R18amfja:"
-              >
-                <div className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center flex items-center font-medium text-lg">
-                  <div className="">More</div>
-                  <svg
-                    className="w-5 h-5 fill-black dark:fill-white"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <path d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z" />
-                  </svg>
-                </div>
+          <a className="flex-grow-0" href="/">
+            <img
+              src={Logo}
+              alt="Revoke.cash logo"
+              className="h-12 dark:invert"
+            />
+          </a>
+
+          {/* <div className="hidden lg:flex flex-grow justify-end gap-2">
+            {isConnected ? (
+              <button className="btn" onClick={handleDisconnect}>
+                {address.slice(0, 6)}...{address.slice(-4)}
               </button>
-              <div
-                className="origin-top-left left-0 absolute rounded-lg shadow-lg bg-white border border-black dark:border-white flex flex-col shrink-0 z-10 mt-2 max-h-88 overflow-x-hidden overflow-y-scroll focus:outline-none"
-                id="headlessui-menu-items-:R18amfja:"
-                role="menu"
-                tabIndex={0}
-                hidden=""
-                style={{ display: "none" }}
-                data-headlessui-state=""
-                aria-labelledby="headlessui-menu-button-:Roamfja:"
-              >
-                <a
-                  id="headlessui-menu-item-:R78amfja:"
-                  role="menuitem"
-                  tabIndex={-1}
-                  data-headlessui-state=""
-                  className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal justify-start text-lg w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                  href="/blog"
-                >
-                  Blog
-                </a>
-                <a
-                  id="headlessui-menu-item-:Rb8amfja:"
-                  role="menuitem"
-                  tabIndex={-1}
-                  data-headlessui-state=""
-                  className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal justify-start text-lg w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                  href="/learn"
-                >
-                  Learn
-                </a>
-                <a
-                  id="headlessui-menu-item-:Rf8amfja:"
-                  role="menuitem"
-                  tabIndex={-1}
-                  data-headlessui-state=""
-                  className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal justify-start text-lg w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                  href="/learn/faq"
-                >
-                  FAQ
-                </a>
-                <a
-                  id="headlessui-menu-item-:Rj8amfja:"
-                  role="menuitem"
-                  tabIndex={-1}
-                  data-headlessui-state=""
-                  className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal justify-start text-lg w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                  href="/about"
-                >
-                  About Us
-                </a>
-              </div>
-            </div>
+            ) : (
+              <button className="btn" onClick={openModal}>
+                Connect Wallet
+              </button>
+            )}
+          </div> */}
+          <div className="hidden lg:block">
+            {" "}
+            <ConnectButton />
           </div>
-          <div
-            className={`fixed ${
-              toggleMenu ? "" : "hidden"
-            }  top-0 z-50 inset-0 `}
-            id="headlessui-dialog-:rs:"
-            role="dialog"
-            aria-modal="true"
-            data-headlessui-state=""
-          >
-            <div
-              className="absolute inset-0 top-[4.5rem] z-10 overflow-y-auto bg-white dark:bg-black w-screen h-screen"
-              id="headlessui-dialog-panel-:rt:"
-              data-headlessui-state=""
+          <button className="lg:hidden" onClick={toggleMobileMenu}>
+            <svg
+              className="h-8 w-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              <div className="flex flex-col items-center gap-6 p-12">
-                <button />{" "}
-                <div className="flex gap-2">
-                  <div className="relative shrink-0">
-                    <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed leading-none shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center flex items-center px-2 h-9 font-normal rounded-lg control-button-wrapper">
-                      <div className="flex items-center gap-1">
-                        <img
-                          alt="Ethereum Sepolia"
-                          loading="lazy"
-                          width={24}
-                          height={24}
-                          decoding="async"
-                          data-nimg={1}
-                          className="aspect-square object-cover bg-white shrink-0 rounded-full border border-black dark:border-white"
-                          src="https://revoke.cash/assets/images/vendor/chains/ethereum.svg"
-                          style={{ color: "transparent" }}
-                        />
-                      </div>
-                      <svg
-                        className="w-5 h-5 fill-black dark:fill-white"
-                        viewBox="0 0 20 20"
-                        aria-hidden="true"
-                        focusable="false"
-                      >
-                        <path d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="flex whitespace-nowrap">
-                    <div
-                      className="relative text-left"
-                      data-headlessui-state=""
-                    >
-                      <button
-                        className="flex focus-visible:outline-none focus-visible:ring-black focus-visible:dark:ring-white focus-visible:ring-1 rounded-lg"
-                        id="headlessui-menu-button-:ru:"
-                        type="button"
-                        aria-haspopup="menu"
-                        aria-expanded="false"
-                        data-headlessui-state=""
-                        aria-controls="headlessui-menu-items-:rv:"
-                      >
-                        <div className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-9 px-4 text-base rounded-lg flex items-center pl-3 pr-2 font-normal">
-                          0x9448...1e9f
-                          <svg
-                            className="w-5 h-5 fill-black dark:fill-white"
-                            viewBox="0 0 20 20"
-                            aria-hidden="true"
-                            focusable="false"
-                          >
-                            <path d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z" />
-                          </svg>
-                        </div>
-                      </button>
-                      <div
-                        className="origin-top-right right-0 absolute rounded-lg shadow-lg bg-white border border-black dark:border-white flex flex-col shrink-0 z-10 mt-2 max-h-88 overflow-x-hidden overflow-y-scroll focus:outline-none"
-                        id="headlessui-menu-items-:rv:"
-                        role="menu"
-                        tabIndex={0}
-                        hidden=""
-                        data-headlessui-state=""
-                        aria-labelledby="headlessui-menu-button-:ru:"
-                        style={{ display: "none" }}
-                      >
-                        <a
-                          id="headlessui-menu-item-:r10:"
-                          role="menuitem"
-                          tabIndex={-1}
-                          data-headlessui-state=""
-                          className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal text-base justify-start w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                          href="/address/0x9448531F22c38b1B7BFBDeD3eF0aCB59359D1e9f"
-                        >
-                          My Approvals
-                        </a>
-                        <button
-                          id="headlessui-menu-item-:r11:"
-                          role="menuitem"
-                          tabIndex={-1}
-                          data-headlessui-state=""
-                          className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal text-base justify-start w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                        >
-                          Disconnect
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg">
-                  Donate
-                </button>
-                <a
-                  className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-                  href="/extension"
-                >
-                  Extension
-                </a>
-                <a
-                  className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-                  href="/exploits"
-                >
-                  Exploits
-                </a>
-                <a
-                  className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-                  href="/learn"
-                >
-                  Learn
-                </a>
-                <a
-                  className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-                  href="/learn/faq"
-                >
-                  FAQ
-                </a>
-                <a
-                  className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-                  href="/blog"
-                >
-                  Blog
-                </a>
-                <a
-                  className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium whitespace-nowrap text-black visited:text-black dark:text-white dark:visited:text-white disabled:text-zinc-600 dark:disabled:text-zinc-400 border-none justify-center text-lg shrink-0"
-                  href="/about"
-                >
-                  About Us
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="flex lg:justify-center grow shrink-0 h-12">
-            <a
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:rounded text-current visited:text-current no-underline hover:no-underline flex"
-              href="/"
-            >
-              <img
-                alt="Revoke.cash logo"
-                fetchpriority="high"
-                width={240}
-                height={48}
-                decoding="async"
-                data-nimg={1}
-                className="filter dark:invert shrink-0"
-                style={{ color: "transparent" }}
-                src={Logo}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16m-7 6h7"
               />
-            </a>
-          </div>
-          <div className="hidden lg:flex justify-end w-2/5 gap-2">
-            <div className="flex gap-2">
-              <div className="relative shrink-0">
-                <button className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed leading-none shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center flex items-center px-2 h-9 font-normal rounded-lg control-button-wrapper">
-                  <div className="flex items-center gap-1">
-                    <img
-                      alt="Ethereum Sepolia"
-                      loading="lazy"
-                      width={24}
-                      height={24}
-                      decoding="async"
-                      data-nimg={1}
-                      className="aspect-square object-cover bg-white shrink-0 rounded-full border border-black dark:border-white"
-                      src={Ethereum}
-                      style={{ color: "transparent" }}
-                    />
-                  </div>
-                  <svg
-                    className="w-5 h-5 fill-black dark:fill-white"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <path d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex whitespace-nowrap">
-                <div className="relative text-left" data-headlessui-state="">
-                  {isConnected ? (
-                    <button
-                      className="flex focus-visible:outline-none focus-visible:ring-black focus-visible:dark:ring-white focus-visible:ring-1 rounded-lg"
-                      id="headlessui-menu-button-:r0:"
-                      type="button"
-                      aria-haspopup="menu"
-                      aria-expanded="false"
-                      data-headlessui-state=""
-                      aria-controls="headlessui-menu-items-:r1:"
-                      onClick={handleDisconnect}
-                    >
-                      <div className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap bg-white text-black visited:text-black hover:bg-zinc-200 disabled:bg-zinc-300 justify-center h-9 px-4 text-base rounded-lg flex items-center pl-3 pr-2 font-normal">
-                        {address.slice(0, 6)}...{address.slice(-4)}
-                        <svg
-                          className="w-5 h-5 fill-black dark:fill-white"
-                          viewBox="0 0 20 20"
-                          aria-hidden="true"
-                          focusable="false"
-                        >
-                          <path d="M4.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.908 3.747 3.908-3.747c0.533-0.481 1.141-0.446 1.574 0 0.436 0.445 0.408 1.197 0 1.615-0.406 0.418-4.695 4.502-4.695 4.502-0.217 0.223-0.502 0.335-0.787 0.335s-0.57-0.112-0.789-0.335c0 0-4.287-4.084-4.695-4.502s-0.436-1.17 0-1.615z" />
-                        </svg>
-                      </div>
-                    </button>
-                  ) : (
-                    <div className="hidden relative lg:flex justify-end w-2/5 gap-2">
-                      <div className="flex gap-2">
-                        <div className="flex whitespace-nowrap">
-                          <button
-                            onClick={openModal}
-                            className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-black text-white visited:text-white hover:bg-zinc-800 disabled:bg-zinc-600 justify-center h-9 px-4 text-base rounded-lg"
-                          >
-                            Connect Wallet
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <div
-                    className="origin-top-right right-0 absolute rounded-lg shadow-lg bg-white border border-black dark:border-white flex flex-col shrink-0 z-10 mt-2 max-h-88 overflow-x-hidden overflow-y-scroll focus:outline-none"
-                    id="headlessui-menu-items-:r1:"
-                    role="menu"
-                    tabIndex={0}
-                    hidden=""
-                    data-headlessui-state=""
-                    aria-labelledby="headlessui-menu-button-:r0:"
-                    style={{ display: "none" }}
-                  >
-                    <a
-                      id="headlessui-menu-item-:r2:"
-                      role="menuitem"
-                      tabIndex={-1}
-                      data-headlessui-state=""
-                      className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal text-base justify-start w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                      href="/address/0x80EeF47fAb3b35726eBE01922969224EEC8B393E"
-                    >
-                      My Approvals
-                    </a>
-                    <button
-                      id="headlessui-menu-item-:r3:"
-                      role="menuitem"
-                      tabIndex={-1}
-                      data-headlessui-state=""
-                      className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed shrink-0 whitespace-nowrap text-black visited:text-black disabled:bg-zinc-300 h-9 px-4 rounded-none border-none font-normal text-base justify-start w-full bg-white dark:bg-black hover:bg-white hover:dark:bg-black"
-                    >
-                      Disconnect
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex lg:hidden justify-end">
-            <div className="flex flex-col">
-              <button
-                onClick={handleToggleMenu}
-                aria-label="Open Menu"
-                className="focus-visible:outline-none focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-2 focus-visible:rounded justify-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                  data-slot="icon"
-                  className="h-8 w-8"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+            </svg>
+          </button>
         </div>
+
+        {isMobileMenuOpen && (
+          <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-[#F28705]">
+            {/* {isConnected ? (
+              <button className="btn" onClick={handleDisconnect}>
+                {address.slice(0, 6)}...{address.slice(-4)}
+              </button>
+            ) : (
+              <button className="btn" onClick={openModal}>
+                Connect Wallet
+              </button>
+            )} */}
+               <div className=" lg:hidden">
+            {" "}
+            <ConnectButton />
+          </div>
+            <button className="link">Donate</button>
+          </div>
+        )}
       </header>
+      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
+        <form
+          onSubmit={formik.handleSubmit}
+          className="h-9 flex gap-2 items-center border border-[#F29F05] dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            data-slot="icon"
+            className="w-6 h-6"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <input
+            className="grow focus-visible:outline-none bg-transparent"
+            placeholder="Enter Transaction Hash"
+            aria-label="Search Accounts by Address or Domain"
+            id="global-search"
+            name="transactionHash"
+            value={formik.values.transactionHash}
+            onChange={formik.handleChange}
+          />
+          {formik.errors.transactionHash && formik.touched.transactionHash && (
+            <div className="pt-1 text-[#FF4609] text-xs">
+              {formik.errors.transactionHash}
+            </div>
+          )}
+          <button type="sumbit" className="text-white bg-black px-1 hover:bg-neutral-700 rounded-md">submit</button>
+        </form>
+      </div>
     </>
   );
 };

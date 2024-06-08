@@ -1,4 +1,33 @@
+/* styles.css or tailwind.config.js */
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-  
+@tailwind components;
+@tailwind utilities;
+
+/* Custom button and link styles */
+.btn {
+  @apply focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white border border-black dark:border-white cursor-pointer font-medium shrink-0 whitespace-nowrap px-4 py-2 rounded-lg text-lg;
+}
+
+.btn:hover {
+  @apply bg-zinc-200 dark:bg-zinc-700;
+}
+
+.btn-more {
+  @apply flex items-center border-none justify-center text-lg;
+}
+
+.link {
+  @apply focus:outline-none focus:ring-black dark:focus:ring-white cursor-pointer font-medium whitespace-nowrap text-black dark:text-white border-none justify-center text-lg;
+}
+
+.link:hover {
+  @apply text-gray-700 dark:text-gray-300;
+}
+
+/* Assuming the WalletConnect button has a class of `walletconnect-button` */
+:root {
+  --w3m-primary-background-color: #2c221a; /* Change to your desired color */
+  --w3m-primary-text-color: #ffffff; /* Change to your desired color */
+  --w3m-secondary-background-color: #483f2d; /* Change to your desired color */
+  --w3m-secondary-text-color: #e2e8f0; /* Change to your desired color */
+}

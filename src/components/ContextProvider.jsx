@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance, useChainId } from "wagmi";
 import AppContext from "./AppContext";
 import {
   getUserTokens,
@@ -14,8 +14,13 @@ const ContextProvider = (props) => {
   const [loadingData, setLoadingData] = useState(false);
   const [loadingEthBalance, setLoadingEthBalance] = useState(false);
   const [tokenData, setTokenData] = useState([]);
-
+  const chainid = useChainId();
+  const desiredChainId = 1;
   const [ethBalance, setEthBalance] = useState("0");
+
+  const { isLoading, refetch } = useBalance({
+    address: address,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,15 +40,15 @@ const ContextProvider = (props) => {
   }, []); // Empty dependency array means this effect runs once after initial render
   useEffect(() => {
     const fetchData = async () => {
-      if (address && isConnected ) {
+      if (chainid === desiredChainId && address && isConnected) {
         setLoadingData(true);
 
         setLoadingEthBalance(true);
         try {
           // Fetch ETH balance
-          const balanceResponse = await getAccountBalance(address);
-          setEthBalance(balanceResponse);
-          console.log("eth balance: ", balanceResponse);
+          const balanceResponse = await refetch();
+
+          setEthBalance(balanceResponse.data.formatted);
         } catch (error) {
           console.error("Error fetching ETH balance:", error);
         } finally {
@@ -54,7 +59,6 @@ const ContextProvider = (props) => {
           // Fetch user tokens
           const tokensResponse = await getUserTokens(address);
           setTokenData(tokensResponse);
-          console.log("tokensData: ", tokensResponse);
         } catch (error) {
           console.error("Error fetching user tokens:", error);
         } finally {
@@ -64,7 +68,7 @@ const ContextProvider = (props) => {
     };
 
     fetchData();
-  }, [isConnected, address]); // Re-run effect when isConnected or address changes
+  }, [isConnected, address, chainid]); // Re-run effect when isConnected or address changes
 
   const handleLoadingData = () => {
     setLoadingData(false);

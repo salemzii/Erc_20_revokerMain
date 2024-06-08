@@ -1,30 +1,20 @@
 import ThemeSelector from "@/components/ThemeSelector";
 import React, { useState, useEffect } from "react";
-
+ import Logo from "../assets/images/logo.svg"
 const Footer = () => {
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  
   return (
     <div className="flex flex-col justify-end">
       <footer
-        className="bg-black dark:bg-zinc-900 mt-24"
+        className="bg-[#0d0c00] mt-24"
         aria-labelledby="footer-heading"
       >
         <h2 id="footer-heading" className="sr-only">
           Footer
         </h2>
-        <div className="mx-auto max-w-7xl px-8">
-          <div className="my-16 grid grid-cols-2 gap-8 xl:col-span-2">
+        <div className="mx-auto max-w-7xl p-8">
+          <h1 className="text-white text-center">ERC-20 REVOKE THE BEST TOOL TO RECOVER YOUR ASSEST</h1>
+          {/* <div className="my-16 grid grid-cols-2 gap-8 xl:col-span-2">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div className="mt-8 flex flex-col gap-4">
                 <h3 className="text-sm font-semibold leading-6 text-zinc-100">
@@ -161,12 +151,12 @@ const Footer = () => {
                 </ul>
               </div>
             </div>
-          </div>
+          </div> */}
           <div className="border w-full my-16 border-zinc-900 dark:border-zinc-800" />
           <div className="my-16 flex flex-col md:flex-row items-center gap-4 justify-between">
             <div className="flex flex-col gap-px text-center md:text-left">
-              <p className="leading-5 text-zinc-100 dark:text-zinc-100">
-                © 2024 Revoke.cash
+              <p className="leading-5 text-zinc-100 flex gap-1">
+                © <img src={Logo}></img>
               </p>
               <ul className="flex justify-center md:justify-start items-center gap-1">
                 <li className="list-none">
@@ -192,7 +182,6 @@ const Footer = () => {
                 </li>
               </ul>
             </div>
-            <ThemeSelector />
           </div>
         </div>
       </footer>
