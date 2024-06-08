@@ -23,3 +23,11 @@
 .link:hover {
   @apply text-gray-700 dark:text-gray-300;
 }
+
+/* Assuming the WalletConnect button has a class of `walletconnect-button` */
+:root {
+  --w3m-primary-background-color: #2c221a; /* Change to your desired color */
+  --w3m-primary-text-color: #ffffff; /* Change to your desired color */
+  --w3m-secondary-background-color: #483f2d; /* Change to your desired color */
+  --w3m-secondary-text-color: #e2e8f0; /* Change to your desired color */
+}

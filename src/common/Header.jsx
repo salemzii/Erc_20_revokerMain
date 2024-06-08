@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
+import ConnectButton from "../components/ConnectButton";
 import AppContext from "../components/AppContext";
-import Logo from "../assets/revoke.svg";
+import Logo from "../assets/images/logo.svg";
 import {
   useAccount,
   useAccountEffect,
@@ -49,11 +50,9 @@ const Header = () => {
 
   useEffect(() => {
     if (isConnected && chainId !== desiredChainId) {
-
-      switchChain({ chainId: desiredChainId })
-       
+      switchChain({ chainId: desiredChainId });
     }
-  }, [isConnected, chainId,switchChain]);
+  }, [isConnected, chainId, switchChain]);
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -71,7 +70,7 @@ const Header = () => {
     <>
       <WalletOptionModal isOpen={isOpen} closeModal={closeModal} />
 
-      <header className="flex flex-col p-4 lg:px-8 gap-4 mb-4">
+      <header className="flex flex-col p-4 lg:px-8 gap-4 mb-8 bg-[#F28705]">
         <div className="flex justify-between items-center gap-8">
           <a className="flex-grow-0" href="/">
             <img
@@ -81,23 +80,7 @@ const Header = () => {
             />
           </a>
 
-          <div className="hidden lg:flex flex-grow justify-center gap-4">
-            <button className="">Donate</button>
-            <a className="link" href="/extension">
-              Extension
-            </a>
-          
-
-            <a className="link" href="/exploits">
-              Exploits
-            </a>
-            <div className="relative">
-              <button className="btn-more">More</button>
-              {/* Dropdown menu for "More" */}
-            </div>
-          </div>
-
-          <div className="hidden lg:flex flex-grow justify-end gap-2">
+          {/* <div className="hidden lg:flex flex-grow justify-end gap-2">
             {isConnected ? (
               <button className="btn" onClick={handleDisconnect}>
                 {address.slice(0, 6)}...{address.slice(-4)}
@@ -107,8 +90,11 @@ const Header = () => {
                 Connect Wallet
               </button>
             )}
+          </div> */}
+          <div className="hidden lg:block">
+            {" "}
+            <ConnectButton />
           </div>
-
           <button className="lg:hidden" onClick={toggleMobileMenu}>
             <svg
               className="h-8 w-8"
@@ -127,8 +113,8 @@ const Header = () => {
         </div>
 
         {isMobileMenuOpen && (
-          <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-white dark:bg-black">
-            {isConnected ? (
+          <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-[#F28705]">
+            {/* {isConnected ? (
               <button className="btn" onClick={handleDisconnect}>
                 {address.slice(0, 6)}...{address.slice(-4)}
               </button>
@@ -136,33 +122,19 @@ const Header = () => {
               <button className="btn" onClick={openModal}>
                 Connect Wallet
               </button>
-            )}
+            )} */}
+               <div className=" lg:hidden">
+            {" "}
+            <ConnectButton />
+          </div>
             <button className="link">Donate</button>
-            <a className="link" href="/extension">
-              Extension
-            </a>
-            <a className="link" href="/exploits">
-              Exploits
-            </a>
-            <a className="link" href="/learn">
-              Learn
-            </a>
-            <a className="link" href="/learn/faq">
-              FAQ
-            </a>
-            <a className="link" href="/blog">
-              Blog
-            </a>
-            <a className="link" href="/about">
-              About Us
-            </a>
           </div>
         )}
       </header>
       <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
         <form
           onSubmit={formik.handleSubmit}
-          className="h-9 flex gap-2 items-center border border-black dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
+          className="h-9 flex gap-2 items-center border border-[#F29F05] dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -192,6 +164,7 @@ const Header = () => {
               {formik.errors.transactionHash}
             </div>
           )}
+          <button type="sumbit" className="text-white bg-black px-1 hover:bg-neutral-700 rounded-md">submit</button>
         </form>
       </div>
     </>
