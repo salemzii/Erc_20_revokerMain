@@ -33,7 +33,7 @@ createWeb3Modal({
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
   enableOnramp: true,
   themeVariables: {
-    "--w3m-accent": "#000",
+    "--w3m-accent": "#0C70F2",
   },
 });
 export default config;

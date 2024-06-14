@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <div className="flex flex-col justify-end">
       <footer
-        className="bg-[#0d0c00] mt-24"
+        className="bg-[#111426] mt-24"
         aria-labelledby="footer-heading"
       >
         <h2 id="footer-heading" className="sr-only">
@@ -152,7 +152,7 @@ const Footer = () => {
               </div>
             </div>
           </div> */}
-          <div className="border w-full my-16 border-zinc-900 dark:border-zinc-800" />
+          <div className="border w-full my-16 border-zinc-100 dark:border-zinc-800" />
           <div className="my-16 flex flex-col md:flex-row items-center gap-4 justify-between">
             <div className="flex flex-col gap-px text-center md:text-left">
               <p className="leading-5 text-zinc-100 flex gap-1">

@@ -31,3 +31,6 @@
   --w3m-secondary-background-color: #483f2d; /* Change to your desired color */
   --w3m-secondary-text-color: #e2e8f0; /* Change to your desired color */
 }
+body{
+  background-color: black;
+}

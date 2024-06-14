@@ -2,20 +2,20 @@ import React from "react";
 import Container from "../components/Container";
 import Poster from "../assets/images/demo-thumb.jpg";
 import Demo from "../assets/videos/demo.mp4";
-import Logo from "../assets/revoke.svg"
+import Logo from "../assets/revoke.png"
 import WalletOptionModal from "../components/WalletOptionModal";
 const Home = () => {
   return (
     <Container>
-      <main className="w-full grow">
+      <main className="w-full grow bg-[#111426] text-white">
         <div
-          className="text-[#0D0C00] "
+          className=" "
         >
           <div className="flex flex-col items-center gap-8">
             <div className="w-full px-4">
               <div className="flex flex-col gap-4 md:gap-4 max-w-3xl mx-auto">
                 <h1>Take Back Control of Your Wallet.</h1>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 text-white">
                   <div>
                     <p>
                       When using dapps like Uniswap or OpenSea you have to grant
@@ -25,7 +25,7 @@ const Home = () => {
                       back control by revoking your approvals.
                     </p>
                   </div>
-                  <div className="border border-black w-full max-w-5xl">
+                  <div className="border border-[#0c87f2] w-full max-w-5xl">
                     <video
                       className="aspect-[16/9] w-full"
                       controls
@@ -37,7 +37,7 @@ const Home = () => {
                     </video>
                   </div>
                   <a
-                    className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white flex items-center border border-black dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-black text-white visited:text-white hover:bg-zinc-800 disabled:bg-zinc-600 justify-center h-12 px-6 text-lg rounded-xl mx-auto"
+                    className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0c87f2] dark:focus-visible:ring-white flex items-center border border-[#0c87f2] dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-black text-[#0c87f2] visited:text-white hover:bg-zinc-800 disabled:bg-zinc-600 justify-center h-12 px-6 text-lg rounded-xl mx-auto"
                     href="/token-approval-checker/ethereum"
                   >
                     Get Started
@@ -46,7 +46,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="w-full px-4 bg-black dark:bg-zinc-900 text-zinc-100 pt-8 pb-16 lg:bg-circles bg-no-repeat bg-right bg-contain ">
+            <div className="w-full px-4 bg-black dark:bg-zinc-900 text-zinc-100 pt-8 pb-16 lg: bg-no-repeat bg-right bg-contain ">
               <div className="flex flex-col items-center">
                 <img src={Logo} className="w-[100px]" alt="logo" />
                 <h2 className="text-center">How To Revoke Your Approvals.</h2>
@@ -62,7 +62,7 @@ const Home = () => {
                           stroke="currentColor"
                           aria-hidden="true"
                           data-slot="icon"
-                          className="w-12 h-12 text-[#F29F05]"
+                          className="w-12 h-12 text-[#0c87f2]"
                         >
                           <path
                             strokeLinecap="round"
@@ -90,7 +90,7 @@ const Home = () => {
                           stroke="currentColor"
                           aria-hidden="true"
                           data-slot="icon"
-                          className="w-12 h-12 text-[#F29F05]"
+                          className="w-12 h-12 text-[#0c87f2]"
                         >
                           <path
                             strokeLinecap="round"
@@ -117,7 +117,7 @@ const Home = () => {
                           stroke="currentColor"
                           aria-hidden="true"
                           data-slot="icon"
-                          className="w-12 h-12 text-[#F29F05]"
+                          className="w-12 h-12 text-[#0c87f2]"
                         >
                           <path
                             strokeLinecap="round"

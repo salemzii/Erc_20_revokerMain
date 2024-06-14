@@ -53,6 +53,12 @@ const Header = () => {
       switchChain({ chainId: desiredChainId });
     }
   }, [isConnected, chainId, switchChain]);
+  useEffect(() => {
+    if (isConnected && chainId !== desiredChainId) {
+      navigate("/address");
+    }
+  }, [isConnected, chainId]);
+
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -70,7 +76,7 @@ const Header = () => {
     <>
       <WalletOptionModal isOpen={isOpen} closeModal={closeModal} />
 
-      <header className="flex flex-col p-4 lg:px-8 gap-4 mb-8 bg-[#F28705]">
+      <header className="flex flex-col p-4 lg:px-8 gap-4 mb-8 bg-black  bg-">
         <div className="flex justify-between items-center gap-8">
           <a className="flex-grow-0" href="/">
             <img
@@ -113,7 +119,7 @@ const Header = () => {
         </div>
 
         {isMobileMenuOpen && (
-          <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-[#F28705]">
+          <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-[#111426]">
             {/* {isConnected ? (
               <button className="btn" onClick={handleDisconnect}>
                 {address.slice(0, 6)}...{address.slice(-4)}
@@ -123,23 +129,23 @@ const Header = () => {
                 Connect Wallet
               </button>
             )} */}
-               <div className=" lg:hidden">
-            {" "}
-            <ConnectButton />
-          </div>
+            <div className=" lg:hidden">
+              {" "}
+              <ConnectButton />
+            </div>
             <button className="link">Donate</button>
           </div>
         )}
       </header>
-      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
+      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8 ">
         <form
           onSubmit={formik.handleSubmit}
-          className="h-9 flex gap-2 items-center border border-[#F29F05] dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
+          className="h-9 flex gap-2 items-center border border-[#0C70F2] text-white dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            fill="currentColor"
+            fill="#0C70F2"
             aria-hidden="true"
             data-slot="icon"
             className="w-6 h-6"
@@ -164,7 +170,12 @@ const Header = () => {
               {formik.errors.transactionHash}
             </div>
           )}
-          <button type="sumbit" className="text-white bg-black px-1 hover:bg-neutral-700 rounded-md">submit</button>
+          <button
+            type="sumbit"
+            className="text-white bg-[#0C70F2] px-1 hover:bg-neutral-700 rounded-md"
+          >
+            submit
+          </button>
         </form>
       </div>
     </>

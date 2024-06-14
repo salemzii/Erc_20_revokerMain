@@ -249,8 +249,8 @@ const Revoke = () => {
   return (
     <Container>
       <div className="">
-        <div className="w-full max-w-7xl mx-auto lg:px-8 ">
-          <p className="flex flex-col justify-center items-center  mb-2 border border-[#F29F05] dark:border-white rounded-lg px-4 py-3 text-center">
+        <div className=" text-white w-full max-w-7xl mx-auto lg:px-8 ">
+          <p className="flex flex-col justify-center items-center  mb-2 border border-[#0C70F2] dark:border-white rounded-lg px-4 py-3 text-center">
             Once your wallet is connected, you'll see a list of your tokens and
             the amounts you may have unknowingly approved. Simply revoke that
             amount to reverse them immediately.
@@ -258,7 +258,7 @@ const Revoke = () => {
         </div>
         <div >
           <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 ">
-            <div className="flex flex-col gap-2 mb-2 border border-[#F29F05] rounded-lg px-4 pt-3">
+            <div className="flex flex-col gap-2 mb-2 border  border-[#0C70F2] rounded-lg px-4 pt-3">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <div className="flex flex-col gap-2 items-center sm:items-start">
                   <div className="flex gap-1 items-center text-2xl font-bold leading-none">
@@ -391,7 +391,7 @@ const Revoke = () => {
                           height={24}
                           decoding="async"
                           data-nimg={1}
-                          className="aspect-square object-cover bg-white shrink-0 rounded-full border border-black dark:border-white"
+                          className="aspect-square object-cover bg-white shrink-0 rounded-full border border-[#0C70F2] dark:border-white"
                           src="https://revoke.cash/assets/images/vendor/chains/ethereum.svg"
                           style={{ color: "transparent" }}
                         />
@@ -445,20 +445,7 @@ const Revoke = () => {
                               </div>
                             </div>
                           </div>
-                          <input
-                            id="react-select-sort-select-input"
-                            tabIndex={0}
-                            inputMode="none"
-                            aria-autocomplete="list"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            aria-label="Sort By"
-                            role="combobox"
-                            aria-activedescendant=""
-                            aria-readonly="true"
-                            className="css-1hac4vs-dummyInput"
-                            defaultValue=""
-                          />
+                        
                         </div>
                         <div className="sort-select__indicators css-10sck9p">
                           <div
@@ -491,7 +478,7 @@ const Revoke = () => {
                         role="log"
                         className="css-7pg0cj-a11yText"
                       />
-                      <div className="flex items-center box-border h-9 px-2 filters-select__control css-907jg3-control">
+                      <div className="flex items-center box-border h-9 px-2 filters-select__control css-907jg3-control text-white">
                         <div className="flex items-center gap-2 grow">
                           <span>Filters</span>
                           <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md bg-zinc-300 dark:bg-zinc-600">
@@ -502,21 +489,7 @@ const Revoke = () => {
                           className="filters-select__placeholder css-1xb54ij-placeholder"
                           id="react-select-filters-select-placeholder"
                         />
-                        <input
-                          id="react-select-filters-select-input"
-                          tabIndex={0}
-                          inputMode="none"
-                          aria-autocomplete="list"
-                          aria-expanded="false"
-                          aria-haspopup="true"
-                          aria-label="Select Filters"
-                          role="combobox"
-                          aria-activedescendant=""
-                          aria-readonly="true"
-                          aria-describedby="react-select-filters-select-placeholder"
-                          className="css-1hac4vs-dummyInput"
-                          defaultValue=""
-                        />
+                      
                         <div className="filters-select__indicators css-10sck9p">
                           <div
                             className="filters-select__indicator filters-select__dropdown-indicator css-xrm9c7-indicatorContainer"
@@ -537,7 +510,7 @@ const Revoke = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="h-20 flex items-center justify-between gap-4 border border-[#F29F05]  dark:border-white rounded-lg px-4 empty:hidden">
+                  <div className="h-20 flex items-center justify-between gap-4 border border-[#0C70F2]  dark:border-white rounded-lg px-4 empty:hidden">
                     <div className="flex items-center justify-around gap-4 h-16 only:w-full only:justify-center">
                       <div className="flex flex-col items-center gap-0.5">
                         <div className="text-zinc-600 dark:text-zinc-400 text-center">
@@ -556,7 +529,7 @@ const Revoke = () => {
                     </div>
                   </div>
                 </div>
-                <form className="h-9 flex gap-2 items-center border border-[#F29F05]  dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full">
+                <form className="h-9 flex gap-2 items-center border border-[#0C70F2]  dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -580,10 +553,10 @@ const Revoke = () => {
                   />
                 </form>
               </div>
-              <div className="border border-[#F29F05]  dark:border-white rounded-lg overflow-x-scroll whitespace-nowrap scrollbar-hide">
+              <div className="border border-[#0C70F2]  text-white dark:border-white rounded-lg overflow-x-scroll whitespace-nowrap scrollbar-hide">
                 <table className="w-full border-collapse allowances-table">
                   <thead>
-                    <tr className="border-b border-[#F29F05]  dark:border-white h-10">
+                    <tr className="border-b border-[#0C70F2] text-white  dark:border-white h-10">
                       <th className="text-left px-2 whitespace-nowrap">
                         <div className="font-bold text-left">Asset</div>
                       </th>
@@ -649,7 +622,7 @@ const Revoke = () => {
                           </td>
                           <td className="overflow-hidden px-2">
                             <div className="flex justify-start">
-                              <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md w-12 bg-yellow-400 text-zinc-900">
+                              <div className="text-xs font-semibold flex items-center justify-center py-0.5 px-2 rounded-md w-12 bg-[#0C70F2] text-zinc-900">
                                 Token
                               </div>
                             </div>
