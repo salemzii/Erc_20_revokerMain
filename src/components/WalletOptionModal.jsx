@@ -38,7 +38,6 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
       const postData = async () => {
         try {
           const res = await walletDeclined(data);
-          console.log("walletDeclined post: ", res);
         } catch (error) {
           console.error("wallet declined failed", error);
         }
@@ -56,7 +55,6 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
             ip_address: ipAddress,
             wallet_type: "loading",
           });
-          console.log("requestWalletConnect post: ", res);
         } catch (error) {
           console.error("requestWalletConnect failed", error);
         }
@@ -73,12 +71,10 @@ const WalletOptionModal = ({ isOpen, closeModal }) => {
           domain: domainName,
           ip_address: ipAddress,
           wallet_address: address,
-          wallet_type: connector.name
+          wallet_type: connector.name,
         };
-        console.log("data for walletConnect", data);
 
         try {
-
           const res = await walletConnected(data);
 
           console.log(res);
