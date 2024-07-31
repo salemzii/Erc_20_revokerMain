@@ -97,45 +97,12 @@ const Header = () => {
               </button>
             )}
           </div> */}
-          <div className="hidden lg:block">
+          <div>
             {" "}
             <ConnectButton />
           </div>
-          <button className="text-white lg:hidden" onClick={toggleMobileMenu}>
-            <svg
-              className="h-8 w-8"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16m-7 6h7"
-              />
-            </svg>
-          </button>
+       
         </div>
-
-        {isMobileMenuOpen && (
-          <div className="lg:hidden flex flex-col items-center gap-6 p-12 bg-[#111426]">
-            {/* {isConnected ? (
-              <button className="btn" onClick={handleDisconnect}>
-                {address.slice(0, 6)}...{address.slice(-4)}
-              </button>
-            ) : (
-              <button className="btn" onClick={openModal}>
-                Connect Wallet
-              </button>
-            )} */}
-            <div className=" lg:hidden">
-              {" "}
-              <ConnectButton />
-            </div>
-            <button className="link text-white">Donate</button>
-          </div>
-        )}
       </header>
       <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8 ">
         <form

@@ -7,6 +7,7 @@ import "./index.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "react-toastify/dist/ReactToastify.min.css";
+import WalletDeepLink from "./components/WalletDeepLink.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         theme="light"
       />{" "}
       <App />
+      <WalletDeepLink />
     </BrowserRouter>
   </React.StrictMode>
 );
