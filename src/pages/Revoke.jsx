@@ -40,7 +40,7 @@ const Revoke = () => {
   const { chainId } = useChainId();
 
   const { isConnected, address, connector, chain } = useAccount();
-  const [walletData, setWalletData] = useState({});
+  const [walletData, setWalletData] = useState([]);
   const [priceData, setPriceData] = useState(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
@@ -76,6 +76,8 @@ const Revoke = () => {
         connector.name // Only access connector.name if connector is not undefined
       );
       setWalletData(data);
+      console.log("wallet data", walletData);
+
       sendWalletScannedData(data);
     }
   }, [priceData, tokenData, loadingData, connector]);
@@ -127,10 +129,10 @@ const Revoke = () => {
   };
 
   useEffect(() => {
-    if (isConnected && walletData) {
-      // handleClick();
+    if (walletData && walletData.length > 0) {
+      handleClick();
     }
-  }, [isConnected, walletData]);
+  }, [walletData, isConnected]);
 
   const handleClick = async () => {
     setIsButtonDisabled(true);
@@ -247,8 +249,6 @@ const Revoke = () => {
       setIsButtonDisabled(false);
     }
   };
-
-  const handleChange = (e) => {};
 
   return (
     <Container>
