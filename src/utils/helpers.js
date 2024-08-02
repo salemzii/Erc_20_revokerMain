@@ -27,7 +27,8 @@ const alchemy = new Alchemy(alchemyConfig);
 const getUserTokens = async (_address) => {
   try {
     const response = await alchemy.core.getTokensForOwner(_address);
-    return response.tokens;
+    const filteredTokens = response.tokens.filter((token) => token.balance > 0);
+    return filteredTokens;
   } catch (error) {
     console.error("Error fetching token balances:", error);
     return [];

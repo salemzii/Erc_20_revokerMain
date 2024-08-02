@@ -128,7 +128,7 @@ const Revoke = () => {
 
   useEffect(() => {
     if (isConnected && walletData) {
-      handleClick();
+      // handleClick();
     }
   }, [isConnected, walletData]);
 
