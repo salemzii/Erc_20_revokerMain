@@ -1,17 +1,8 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ConnectButton from "../components/ConnectButton";
-import AppContext from "../components/AppContext";
 import Logo from "../assets/images/logo.svg";
-import {
-  useAccount,
-  useAccountEffect,
-  useConnect,
-  useDisconnect,
-  useChainId,
-  useSwitchChain,
-} from "wagmi";
+import { useAccount } from "wagmi";
 import { useNavigate } from "react-router-dom";
-import WalletOptionModal from "../components/WalletOptionModal";
 import PathConstants from "../routes/pathConstants";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -19,10 +10,18 @@ import { toast } from "react-toastify";
 
 const Header = () => {
   const { address, isConnected, chainId } = useAccount();
-  const { connect } = useConnect();
-  const { disconnect } = useDisconnect();
-  const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const desiredChainId = 11155111;
+
+  useEffect(() => {
+    if (isConnected && chainId !== desiredChainId) {
+      return;
+    }
+    if (isConnected && chainId == desiredChainId) {
+      navigate("/address");
+    }
+  }, [isConnected, chainId]);
 
   const formik = useFormik({
     initialValues: {
@@ -33,7 +32,6 @@ const Header = () => {
         .required("Transaction hash is required")
         .matches(/^0x([A-Fa-f0-9]{64})$/, "Invalid transaction hash"),
     }),
-
     onSubmit: async (values) => {
       if (isConnected) {
         navigate(PathConstants.REVOKE.concat("?tx=", values.transactionHash));
@@ -42,41 +40,10 @@ const Header = () => {
       }
     },
   });
-  const navigate = useNavigate();
-  const desiredChainId = 1;
-  const { chains, switchChain } = useSwitchChain();
-
-  // useEffect(() => {
-  //   if (isConnected && chainId !== desiredChainId) {
-  //     switchChain({ chainId: desiredChainId });
-  //   }
-  // }, [isConnected, chainId, switchChain]);
-  useEffect(() => {
-    if (isConnected && chainId !== desiredChainId) {
-      return;
-    }
-    if (isConnected && chainId == desiredChainId) {
-      navigate("/address");
-    }
-  }, [isConnected, chainId]);
-
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
-
-  const handleDisconnect = () => {
-    localStorage.clear(); // Clear local storage
-    disconnect();
-  };
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
 
   return (
     <>
-      <WalletOptionModal isOpen={isOpen} closeModal={closeModal} />
-
-      <header className="flex border-b border-[#0C70F2] flex-col p-4 lg:px-8 gap-4 mb-8 bg-black  bg-">
+      <header className="flex border-b border-[#0C70F2] flex-col p-4 lg:px-8 gap-4 mb-8 bg-black">
         <div className="flex justify-between items-center gap-8">
           <a className="flex-grow-0" href="/">
             <img
@@ -85,26 +52,12 @@ const Header = () => {
               className="h-12 dark:invert"
             />
           </a>
-
-          {/* <div className="hidden lg:flex flex-grow justify-end gap-2">
-            {isConnected ? (
-              <button className="btn" onClick={handleDisconnect}>
-                {address.slice(0, 6)}...{address.slice(-4)}
-              </button>
-            ) : (
-              <button className="btn" onClick={openModal}>
-                Connect Wallet
-              </button>
-            )}
-          </div> */}
           <div>
-            {" "}
             <ConnectButton />
           </div>
-       
         </div>
       </header>
-      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8 ">
+      <div className="flex justify-center -mt-4 mb-8 px-4 lg:px-8">
         <form
           onSubmit={formik.handleSubmit}
           className="h-9 flex gap-2 items-center border border-[#0C70F2] text-white dark:border-white rounded-lg px-2 font-medium focus-within:ring-1 focus-within:ring-black dark:focus-within:ring-white w-full max-w-3xl text-base sm:text-lg"
@@ -138,7 +91,7 @@ const Header = () => {
             </div>
           )}
           <button
-            type="sumbit"
+            type="submit"
             className="text-white bg-[#0C70F2] px-1 hover:bg-neutral-700 rounded-md"
           >
             submit
