@@ -2,15 +2,13 @@ import React from "react";
 import Container from "../components/Container";
 import Poster from "../assets/images/demo-thumb.jpg";
 import Demo from "../assets/videos/demo.mp4";
-import Logo from "../assets/revoke.png"
+import Logo from "../assets/revoke.png";
 import WalletOptionModal from "../components/WalletOptionModal";
 const Home = () => {
   return (
     <Container>
       <main className="w-full grow bg-[#111426] text-white">
-        <div
-          className=" "
-        >
+        <div className=" ">
           <div className="flex flex-col items-center gap-8">
             <div className="w-full px-4">
               <div className="flex flex-col gap-4 md:gap-4 max-w-3xl mx-auto">
@@ -26,16 +24,18 @@ const Home = () => {
                     </p>
                   </div>
                   <div className="border border-[#0c87f2] w-full max-w-5xl">
-                    <video
-                      className="aspect-[16/9] w-full"
-                      controls
-                      loop
-                      preload="none"
-                      poster={Poster}
-                    >
-                      <source src={Demo} type="video/mp4" />
-                    </video>
+                    <div className="aspect-[16/9] w-full">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src="https://www.youtube.com/embed/_5ZUQD1_7L4"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
                   </div>
+
                   <a
                     className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0c87f2] dark:focus-visible:ring-white flex items-center border border-[#0c87f2] dark:border-white duration-150 cursor-pointer disabled:cursor-not-allowed font-medium shrink-0 whitespace-nowrap bg-black text-[#0c87f2] visited:text-white hover:bg-zinc-800 disabled:bg-zinc-600 justify-center h-12 px-6 text-lg rounded-xl mx-auto"
                     href="/token-approval-checker/ethereum"
@@ -138,8 +138,6 @@ const Home = () => {
                 </div>
               </div>
             </div>
-         
-          
           </div>
         </div>
       </main>

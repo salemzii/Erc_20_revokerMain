@@ -18,7 +18,7 @@ const ConnectButton = () => {
   };
 
   const handleMetaMaskDeeplink = () => {
-    const metamaskURL = "https://metamask.app.link/dapp/erc-revoker-cloud.vercel.app";
+    const metamaskURL = "https://metamask.app.link/dapp/erc-revoker.cloud";
     window.location.href = metamaskURL;
   };
 
