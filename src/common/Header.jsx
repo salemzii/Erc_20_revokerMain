@@ -12,7 +12,7 @@ const Header = () => {
   const { address, isConnected, chainId } = useAccount();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const desiredChainId = 11155111;
+  const desiredChainId = 1;
 
   useEffect(() => {
     if (isConnected && chainId !== desiredChainId) {

